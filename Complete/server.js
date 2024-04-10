@@ -13,29 +13,37 @@ let mimeTypes = {
         '.map' : 'application/json',
         '.map' : 'application/octet-stream' // Chrome is requesting socket.io;'s source map file
     };
-
-function handleRequest(request, response) {
-    let lookup = (request.url === '/') ? '/index.html' : decodeURI(request.url);
-    let file = lookup.substring(1, lookup.length);
-
-    fs.access(file, fs.constants.R_OK, function(err) {
-        if (!err) {
-            fs.readFile(file, function(error, data) {
-                if (error) {
-                    response.writeHead(500);
-                    response.end('Server Error!');
-                } else {
-                    let headers = {'Content-type': mimeTypes[path.extname(lookup)]};
-                    response.writeHead(200, headers);
-                    response.end(data);
-                }
-            });
+    function handleRequest(request, response) {
+        let lookup;
+        if (request.url === '/') {
+            lookup = '/menu.html';
+        } else if (request.url === '/index') {
+            lookup = '/index.html'; // Assuming 'menu.html' is the file you want to serve
         } else {
-            response.writeHead(404);
-            response.end();
+            lookup = decodeURI(request.url);
         }
-    });
-}
+        let file = lookup.substring(1, lookup.length);
+    
+        fs.access(file, fs.constants.R_OK, function(err) {
+            if (!err) {
+                fs.readFile(file, function(error, data) {
+                    if (error) {
+                        response.writeHead(500);
+                        response.end('Server Error!');
+                    } else {
+                        let headers = {'Content-type': mimeTypes[path.extname(lookup)]};
+                        response.writeHead(200, headers);
+                        response.end(data);
+                    }
+                });
+            } else {
+                response.writeHead(404);
+                response.end();
+            }
+        });
+    }
+    
+
 
 let server = http.createServer(handleRequest);
 
