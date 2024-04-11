@@ -3,6 +3,7 @@
 // Model for each player in the game.
 //
 //------------------------------------------------------------------
+let headPath = {}
 MyGame.components.Player = function() {
     'use strict';
     let that = {};
@@ -11,8 +12,8 @@ MyGame.components.Player = function() {
         y: 0
     };
     let size = {
-        width: 0.15,
-        height: 0.15
+        width: 0.10,
+        height: 0.10
     };
     let direction = 0;
     let rotateRate = 0;
@@ -79,8 +80,14 @@ MyGame.components.Player = function() {
 
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
+        headPath = {x: position.x-.1, y: position.y, direction: direction}
 
-        
+        // Update snake segments' positions
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            segment.move(elapsedTime);
+        }
+
     };
 
     //------------------------------------------------------------------
@@ -122,24 +129,28 @@ MyGame.components.Player = function() {
     function createSegment(playerPosition) {
         let segment = {};
 
-        segment.position = {x: playerPosition.x-.15,
+        segment.position = {x: playerPosition.x-.1,
             y: playerPosition.y}; // Position of the segment
         segment.direction = 0; // Direction of the segment
         segment.speed = 0.0002; // Speed of the segment
         segment.size = {
-            width: 0.15,
-            height: 0.15,
-            radius: 0.15
+            width: 0.10,
+            height: 0.10,
+            radius: 0.05
         };
 
         //------------------------------------------------------------------
         //
         // Moves the segment based on the given vector and elapsed time.
         //
-        //------------------------------------------------------------------
-        segment.move = function(vectorX, vectorY, elapsedTime) {
-            position.x += (vectorX * elapsedTime * speed);
-            position.y += (vectorY * elapsedTime * speed);
+        //---------------------a---------------------------------------------
+        segment.move = function(headPath, elapsedTime) {
+            let nextPos = headPath
+            headPath = {x: segment.position.x, y: segment.position.y, direction: segment.direction}
+            console.log(segment)
+            segment.position.x = (nextPos.x);
+            segment.position.y = (nextPos.y);
+          segment.direction= nextPos.direction
         };
 
         //------------------------------------------------------------------

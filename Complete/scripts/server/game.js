@@ -87,9 +87,12 @@ function processInput(elapsedTime) {
 //
 //------------------------------------------------------------------
 function collided(obj1, obj2) {
+    console.log(obj1.position.x)
+    console.log(obj2.position.x)
     let distance = Math.sqrt(Math.pow(obj1.position.x - obj2.position.x, 2) + Math.pow(obj1.position.y - obj2.position.y, 2));
     let radii = obj1.radius + obj2.radius;
-
+    console.log(distance)
+    console.log(radii)
     return distance <= radii;
 }
 
@@ -101,6 +104,21 @@ function collided(obj1, obj2) {
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
         activeClients[clientId].player.update(currentTime);
+        for (let i= 0; i <activeClients[clientId].player.segments.length; i++){
+            for (let clientIdNew in activeClients) {
+                if(clientIdNew !== activeClients[clientId].player.clientId){
+                    let segObj = {position: {x:activeClients[clientId].player.segments[i].position.x, y:activeClients[clientId].player.segments[i].position.y}, radius: activeClients[clientId].player.segments[i].size.radius-.02}
+
+                    if(collided(segObj, activeClients[clientIdNew].player)){
+    
+                        console.log(activeClients[clientId].player.position)
+                        console.log("HIT")
+                    }
+                }
+            }
+
+
+        }
     }
 
     for (let missile = 0; missile < newMissiles.length; missile++) {

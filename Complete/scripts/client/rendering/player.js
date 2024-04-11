@@ -17,6 +17,7 @@ MyGame.renderer.Player = (function(graphics) {
         graphics.rotateCanvas(model.position, model.direction);
         graphics.drawImage(texture, model.position, model.size);
         let segments = model.segments
+        console.log(segments)
         for (let i = 0; i < segments?.length; i++) {
             graphics.drawImage(segmentTexure, segments[i].position, segments[i].size)
         }
