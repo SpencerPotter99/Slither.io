@@ -54,7 +54,7 @@ MyGame.loader = (function() {
             source: 'assets/EvilEngine.png'
         }, {
             key: 'player-segment',
-            source: 'assets/Logs.png'
+            source: 'assets/Black-Circle.png'
         }, {
             key: 'player-segment-other',
             source: 'assets/EvilLogs.png'

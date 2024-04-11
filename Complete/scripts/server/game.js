@@ -100,6 +100,7 @@ function collided(obj1, obj2) {
 //------------------------------------------------------------------
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
+        activeClients[clientId].player.move(elapsedTime)
         activeClients[clientId].player.update(currentTime);
     }
 

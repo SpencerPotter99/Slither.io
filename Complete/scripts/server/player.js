@@ -31,6 +31,7 @@ function createPlayer() {
     let speed = 0.0002; // unit distance per millisecond
     let segments = []; // Array to store snake segments
     let reportUpdate = false; // Indicates if this model was updated during the last update
+    let targetLocations = []
 
     
 
@@ -81,10 +82,21 @@ function createPlayer() {
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
 
+        // Update target locations for segments
+        targetLocations.unshift({ x: position.x, y: position.y });
+
         // Update snake segments' positions
         for (let i = 0; i < segments.length; i++) {
             let segment = segments[i];
-            segment.move(vectorX, vectorY, elapsedTime);
+            if (targetLocations.length > i + 1) {
+                let target = targetLocations[i + 1];
+                segment.addTarget(target);
+            }
+        }
+        // Update snake segments' positions
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            segment.move(elapsedTime);
         }
     };
 
@@ -99,6 +111,11 @@ function createPlayer() {
         direction += (rotateRate * elapsedTime);
     };
 
+    that.rotateUp = function(elapsedTime) {
+        reportUpdate = true;
+        direction += (rotateRate * elapsedTime);
+    };
+
     //------------------------------------------------------------------
     //
     // Rotates the player left based on how long it has been since the
@@ -109,6 +126,10 @@ function createPlayer() {
         reportUpdate = true;
         direction -= (rotateRate * elapsedTime);
     };
+    that.rotateDown = function(elapsedTime) {
+        reportUpdate = true;
+        direction -= (rotateRate * elapsedTime);
+    };
 
     //------------------------------------------------------------------
     //
@@ -116,6 +137,10 @@ function createPlayer() {
     //
     //------------------------------------------------------------------
     that.update = function(when) {
+        if(direction>6.283 || direction < -6.283){
+            console.log("TEST")
+            direction = 0
+        }
         // Update snake segments
         for (let i = 0; i < segments.length; i++) {
             let segment = segments[i];
@@ -173,16 +198,31 @@ function createSegment(playerPosition) {
         radius: 0.15
     };
     segment.speed = 0.0002; // Speed of the segment
+    let targetsQueue = []
 
     //------------------------------------------------------------------
     //
     // Moves the segment based on the given vector and elapsed time.
     //
     //------------------------------------------------------------------
-    segment.move = function(vectorX, vectorY, elapsedTime) {
-        
-        segment.position.x += (vectorX * elapsedTime * segment.speed);
-        segment.position.y += (vectorY * elapsedTime * segment.speed);
+    segment.move = function(elapsedTime) {
+        if (targetsQueue.length > 0) {
+            let target = targetsQueue[0];
+            let deltaX = target.x - segment.position.x;
+            let deltaY = target.y - segment.position.y;
+            let distanceToTarget = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            let vectorX = deltaX / distanceToTarget;
+            let vectorY = deltaY / distanceToTarget;
+
+            segment.position.x += (vectorX * elapsedTime * segment.speed);
+            segment.position.y += (vectorY * elapsedTime * segment.speed);
+
+            // Check if the segment has reached the target
+            if (distanceToTarget < 0.1) {
+                // Remove the reached target from the queue
+                targetsQueue.shift();
+            }
+        }
     };
 
     //------------------------------------------------------------------
@@ -193,6 +233,11 @@ function createSegment(playerPosition) {
     segment.update = function(when) {
         // Update segment's behavior if needed
     };
+
+    segment.addTarget = function(newTarget) {
+        targetsQueue.push(newTarget);
+    };
+
 
     return segment;
 }

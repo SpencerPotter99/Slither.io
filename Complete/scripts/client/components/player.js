@@ -18,6 +18,7 @@ MyGame.components.Player = function() {
     let rotateRate = 0;
     let speed = 0;
     let segments = []; // Array to store segments
+    let targetLocations = []
 
     Object.defineProperty(that, 'direction', {
         get: () => direction,
@@ -80,6 +81,22 @@ MyGame.components.Player = function() {
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
 
+        // Update target locations for segments
+        targetLocations.unshift({ x: position.x, y: position.y });
+
+        // Update snake segments' positions
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            if (targetLocations.length > i + 1) {
+                let target = targetLocations[i + 1];
+                segment.addTarget(target);
+            }
+        }
+        // Update snake segments' positions
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            segment.move(elapsedTime);
+        }
         
     };
 
@@ -107,6 +124,10 @@ MyGame.components.Player = function() {
     //
     //------------------------------------------------------------------
     that.update = function(elapsedTime) {
+        if(direction>6.283 || direction < -6.283){
+            console.log("TEST")
+            direction = 0
+        }
         // Update segment behaviors if needed
         for (let i = 0; i < segments.length; i++) {
             let segment = segments[i];
@@ -138,8 +159,23 @@ MyGame.components.Player = function() {
         //
         //------------------------------------------------------------------
         segment.move = function(vectorX, vectorY, elapsedTime) {
-            position.x += (vectorX * elapsedTime * speed);
-            position.y += (vectorY * elapsedTime * speed);
+            if (targetsQueue.length > 0) {
+                let target = targetsQueue[0];
+                let deltaX = target.x - segment.position.x;
+                let deltaY = target.y - segment.position.y;
+                let distanceToTarget = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                let vectorX = deltaX / distanceToTarget;
+                let vectorY = deltaY / distanceToTarget;
+    
+                segment.position.x += (vectorX * elapsedTime * segment.speed);
+                segment.position.y += (vectorY * elapsedTime * segment.speed);
+    
+                // Check if the segment has reached the target
+                if (distanceToTarget < 0.1) {
+                    // Remove the reached target from the queue
+                    targetsQueue.shift();
+                }
+            }
         };
 
         //------------------------------------------------------------------
