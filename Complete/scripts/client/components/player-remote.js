@@ -7,15 +7,16 @@ MyGame.components.PlayerRemote = function() {
     'use strict';
     let that = {};
     let size = {
-        width: 0.05,
-        height: 0.05
+        width: 0.15,
+        height: 0.15
     };
     let state = {
         direction: 0,
         position: {
             x: 0,
             y: 0
-        }
+        },
+        segments: []
     };
     let goal = {
         direction: 0,
@@ -23,6 +24,7 @@ MyGame.components.PlayerRemote = function() {
             x: 0,
             y: 0
         },
+        segments:[],
         updateWindow: 0      // Server reported time elapsed since last update
     };
 
@@ -53,9 +55,10 @@ MyGame.components.PlayerRemote = function() {
             //
             // Turn first, then move.
             state.direction -= (state.direction - goal.direction) * updateFraction;
-
+            
             state.position.x -= (state.position.x - goal.position.x) * updateFraction;
             state.position.y -= (state.position.y - goal.position.y) * updateFraction;
+            state.segments = goal.segments
         }
     };
 

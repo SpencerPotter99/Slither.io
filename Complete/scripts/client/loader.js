@@ -48,11 +48,17 @@ MyGame.loader = (function() {
         }],
         assetOrder = [{
             key: 'player-self',
-            source: 'assets/playerShip1_blue.png'
+            source: 'assets/Engine.png'
         }, {
             key: 'player-other',
-            source: 'assets/playerShip1_red.png'
+            source: 'assets/EvilEngine.png'
         }, {
+            key: 'player-segment',
+            source: 'assets/Black-Circle.png'
+        }, {
+            key: 'player-segment-other',
+            source: 'assets/EvilLogs.png'
+        },{
             key: 'explosion',
             source: 'assets/explosion.png'
         }];

@@ -12,10 +12,16 @@ MyGame.renderer.Player = (function(graphics) {
     // Renders a Player model.
     //
     // ------------------------------------------------------------------
-    that.render = function(model, texture) {
+    that.render = function(model, texture, segmentTexure) {
         graphics.saveContext();
         graphics.rotateCanvas(model.position, model.direction);
         graphics.drawImage(texture, model.position, model.size);
+        graphics.restoreContext();
+        let segments = model.segments
+        for (let i = 0; i < segments?.length; i++) {
+            graphics.rotateCanvas(segments[i].position, segments[i].direction);
+            graphics.drawImage(segmentTexure, segments[i].position, segments[i].size)
+        }
         graphics.restoreContext();
     };
 

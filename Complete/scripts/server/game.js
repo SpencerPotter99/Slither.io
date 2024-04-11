@@ -72,6 +72,10 @@ function processInput(elapsedTime) {
             case NetworkIds.INPUT_FIRE:
                 createMissile(input.clientId, client.player);
                 break;
+            case NetworkIds.INPUT_ADD_SEGMENT:
+                console.log("test")
+                client.player.addSegment();
+                break;
         }
     }
 }
@@ -96,6 +100,7 @@ function collided(obj1, obj2) {
 //------------------------------------------------------------------
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
+        activeClients[clientId].player.move(elapsedTime)
         activeClients[clientId].player.update(currentTime);
     }
 
@@ -186,6 +191,7 @@ function updateClients(elapsedTime) {
             lastMessageId: client.lastMessageId,
             direction: client.player.direction,
             position: client.player.position,
+            segments: client.player.segments,
             updateWindow: lastUpdate
         };
         if (client.player.reportUpdate) {
@@ -273,7 +279,8 @@ function initializeSocketIO(httpServer) {
                     position: newPlayer.position,
                     rotateRate: newPlayer.rotateRate,
                     speed: newPlayer.speed,
-                    size: newPlayer.size
+                    size: newPlayer.size,
+                    segments: newPlayer.getSegments(),
                 });
 
                 //
@@ -284,7 +291,8 @@ function initializeSocketIO(httpServer) {
                     position: client.player.position,
                     rotateRate: client.player.rotateRate,
                     speed: client.player.speed,
-                    size: client.player.size
+                    size: client.player.size,
+                    segments: client.player.getSegments(),
                 });
             }
         }
@@ -317,12 +325,14 @@ function initializeSocketIO(httpServer) {
             socket: socket,
             player: newPlayer
         };
+        newPlayer.addSegment();
         socket.emit(NetworkIds.CONNECT_ACK, {
             direction: newPlayer.direction,
             position: newPlayer.position,
             size: newPlayer.size,
             rotateRate: newPlayer.rotateRate,
-            speed: newPlayer.speed
+            speed: newPlayer.speed,
+            segments: newPlayer.getSegments(),
         });
 
         socket.on(NetworkIds.INPUT, data => {
