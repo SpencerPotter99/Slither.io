@@ -51,8 +51,14 @@ MyGame.loader = (function() {
             source: 'assets/Engine.png'
         }, {
             key: 'player-other',
-            source: 'assets/playerShip1_red.png'
+            source: 'assets/EvilEngine.png'
         }, {
+            key: 'player-segment',
+            source: 'assets/Logs.png'
+        }, {
+            key: 'player-segment-other',
+            source: 'assets/EvilLogs.png'
+        },{
             key: 'explosion',
             source: 'assets/explosion.png'
         }];

@@ -10,7 +10,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         myKeyboard = input.Keyboard(),
         playerSelf = {
             model: components.Player(),
-            texture: MyGame.assets['player-self']
+            texture: MyGame.assets['player-self'],
+            segmentTexure: MyGame.assets['player-segment']
         },
         playerOthers = {},
         missiles = {},
@@ -78,8 +79,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function connectPlayerSelf(data) {
+
         playerSelf.model.position.x = data.position.x;
         playerSelf.model.position.y = data.position.y;
+
+        playerSelf.model.segments = data.segments
 
         playerSelf.model.size.x = data.size.x;
         playerSelf.model.size.y = data.size.y;
@@ -100,11 +104,14 @@ MyGame.main = (function(graphics, renderer, input, components) {
         model.state.position.x = data.position.x;
         model.state.position.y = data.position.y;
         model.state.direction = data.direction;
+        model.state.segments = data.segments
         model.state.lastUpdate = performance.now();
+        
 
         model.goal.position.x = data.position.x;
         model.goal.position.y = data.position.y;
         model.goal.direction = data.direction;
+        model.goal.segments = data.segments
         model.goal.updateWindow = 0;
 
         model.size.x = data.size.x;
@@ -112,7 +119,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
 
         playerOthers[data.clientId] = {
             model: model,
-            texture: MyGame.assets['player-other']
+            texture: MyGame.assets['player-other'],
+            segmentTexure: MyGame.assets['player-segment-other']
         };
     }
 
@@ -134,6 +142,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerSelf.model.position.x = data.position.x;
         playerSelf.model.position.y = data.position.y;
         playerSelf.model.direction = data.direction;
+        playerSelf.model.segments = data.segments
 
         //
         // Remove messages from the queue up through the last one identified
@@ -162,6 +171,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 case NetworkIds.ROTATE_LEFT:
                     playerSelf.model.rotateLeft(message.elapsedTime);
                     break;
+                case NetworkIds.ADD_SEGMENT:
+                    playerSelf.model.addSegment();
+                    break;
             }
             memory.enqueue(message);
         }
@@ -178,6 +190,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             let model = playerOthers[data.clientId].model;
             model.goal.updateWindow = data.updateWindow;
 
+            model.goal.segments = data.segments
             model.goal.position.x = data.position.x;
             model.goal.position.y = data.position.y
             model.goal.direction = data.direction;
@@ -304,10 +317,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function render() {
         graphics.clear();
-        renderer.Player.render(playerSelf.model, playerSelf.texture);
+        renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
         for (let id in playerOthers) {
             let player = playerOthers[id];
-            renderer.PlayerRemote.render(player.model, player.texture);
+            renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
         }
 
         for (let missile in missiles) {
@@ -368,6 +381,19 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 playerSelf.model.rotateRight(elapsedTime);
             },
             'd', true);
+
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                    id: messageId++,
+                    elapsedTime: elapsedTime,
+                    type: NetworkIds.INPUT_ADD_SEGMENT
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.addSegment();
+                console.log("test")
+            },
+            't', true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {

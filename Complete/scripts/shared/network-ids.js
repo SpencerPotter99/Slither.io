@@ -28,6 +28,10 @@
             value: 'rotate-right',
             writable: false
         },
+        'INPUT_ADD_SEGMENT': {
+            value: 'add-segment',
+            writable: false
+        },
         'INPUT_FIRE': {
             value: 'fire',
             writable: false

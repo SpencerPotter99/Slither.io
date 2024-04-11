@@ -5,7 +5,7 @@
 // ------------------------------------------------------------------
 'use strict';
 
-let random = require ('./random');
+let random = require('./random');
 
 //------------------------------------------------------------------
 //
@@ -22,14 +22,17 @@ function createPlayer() {
     };
 
     let size = {
-        width: 0.05,
-        height: 0.05,
-        radius: 0.05
+        width: 0.15,
+        height: 0.15,
+        radius: 0.15
     };
-    let direction = random.nextDouble() * 2 * Math.PI;    // Angle in radians
-    let rotateRate = Math.PI / 1000;    // radians per millisecond
-    let speed = 0.0002;                  // unit distance per millisecond
-    let reportUpdate = false;    // Indicates if this model was updated during the last update
+    let direction = random.nextDouble() * 2 * Math.PI; // Angle in radians
+    let rotateRate = Math.PI / 1000; // radians per millisecond
+    let speed = 0.0002; // unit distance per millisecond
+    let segments = []; // Array to store snake segments
+    let reportUpdate = false; // Indicates if this model was updated during the last update
+
+    
 
     Object.defineProperty(that, 'direction', {
         get: () => direction
@@ -49,6 +52,10 @@ function createPlayer() {
 
     Object.defineProperty(that, 'rotateRate', {
         get: () => rotateRate
+    });
+
+    Object.defineProperty(that, 'segments', {
+        get: () => segments
     });
 
     Object.defineProperty(that, 'reportUpdate', {
@@ -73,6 +80,12 @@ function createPlayer() {
 
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
+
+        // Update snake segments' positions
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            segment.move(vectorX, vectorY, elapsedTime);
+        }
     };
 
     //------------------------------------------------------------------
@@ -103,9 +116,85 @@ function createPlayer() {
     //
     //------------------------------------------------------------------
     that.update = function(when) {
+        // Update snake segments
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i];
+            segment.update(when);
+        }
+    };
+
+    //------------------------------------------------------------------
+    //
+    // Function to add a new segment to the snake.
+    //
+    //------------------------------------------------------------------
+    that.addSegment = function() {
+        reportUpdate = true;
+        let newSegment
+        if(segments.length===0){
+            newSegment = createSegment(position);
+        }
+        else{
+            newSegment = createSegment(segments[segments.length - 1].position);
+        }
+
+        segments.push(newSegment);
+    };
+
+    //------------------------------------------------------------------
+    //
+    // Function to retrieve all segments of the snake.
+    //
+    //------------------------------------------------------------------
+    that.getSegments = function() {
+        return segments;
     };
 
     return that;
+}
+
+//------------------------------------------------------------------
+//
+// Function to create a new segment of the snake.
+//
+//------------------------------------------------------------------
+function createSegment(playerPosition) {
+    let segment = {};
+
+    // Initialize the segment with the player's position
+    segment.position = {
+        x: playerPosition.x-.15,
+        y: playerPosition.y
+    };
+    segment.direction = 0; // Direction of the segment
+    segment.size = {
+        width: 0.15,
+        height: 0.15,
+        radius: 0.15
+    };
+    segment.speed = 0.0002; // Speed of the segment
+
+    //------------------------------------------------------------------
+    //
+    // Moves the segment based on the given vector and elapsed time.
+    //
+    //------------------------------------------------------------------
+    segment.move = function(vectorX, vectorY, elapsedTime) {
+        
+        segment.position.x += (vectorX * elapsedTime * segment.speed);
+        segment.position.y += (vectorY * elapsedTime * segment.speed);
+    };
+
+    //------------------------------------------------------------------
+    //
+    // Function used to update the segment during the game loop.
+    //
+    //------------------------------------------------------------------
+    segment.update = function(when) {
+        // Update segment's behavior if needed
+    };
+
+    return segment;
 }
 
 module.exports.create = () => createPlayer();
