@@ -108,12 +108,16 @@ function createPlayer() {
     //------------------------------------------------------------------
     that.rotateRight = function(elapsedTime) {
         reportUpdate = true;
-        direction += (rotateRate * elapsedTime);
+        direction = 0;
     };
 
     that.rotateUp = function(elapsedTime) {
         reportUpdate = true;
-        direction += (rotateRate * elapsedTime);
+        direction = 4.71239
+    };
+    that.rotateSouthEast = function(elapsedTime) {
+        reportUpdate = true;
+        direction = 0.785398
     };
 
     //------------------------------------------------------------------
@@ -124,11 +128,12 @@ function createPlayer() {
     //------------------------------------------------------------------
     that.rotateLeft = function(elapsedTime) {
         reportUpdate = true;
-        direction -= (rotateRate * elapsedTime);
+        direction = 3.14159;
     };
     that.rotateDown = function(elapsedTime) {
         reportUpdate = true;
-        direction -= (rotateRate * elapsedTime);
+        
+        direction =1.5708
     };
 
     //------------------------------------------------------------------
@@ -138,7 +143,6 @@ function createPlayer() {
     //------------------------------------------------------------------
     that.update = function(when) {
         if(direction>6.283 || direction < -6.283){
-            console.log("TEST")
             direction = 0
         }
         // Update snake segments
@@ -198,7 +202,7 @@ function createSegment(playerPosition) {
         radius: 0.15
     };
     segment.speed = 0.0002; // Speed of the segment
-    let targetsQueue = []
+    segment.targetsQueue = []
 
     //------------------------------------------------------------------
     //
@@ -206,8 +210,8 @@ function createSegment(playerPosition) {
     //
     //------------------------------------------------------------------
     segment.move = function(elapsedTime) {
-        if (targetsQueue.length > 0) {
-            let target = targetsQueue[0];
+        if (segment.targetsQueue.length > 0) {
+            let target = segment.targetsQueue[0];
             let deltaX = target.x - segment.position.x;
             let deltaY = target.y - segment.position.y;
             let distanceToTarget = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -220,7 +224,7 @@ function createSegment(playerPosition) {
             // Check if the segment has reached the target
             if (distanceToTarget < 0.1) {
                 // Remove the reached target from the queue
-                targetsQueue.shift();
+                segment.targetsQueue.shift();
             }
         }
     };
@@ -235,7 +239,7 @@ function createSegment(playerPosition) {
     };
 
     segment.addTarget = function(newTarget) {
-        targetsQueue.push(newTarget);
+        segment.targetsQueue.push(newTarget);
     };
 
 

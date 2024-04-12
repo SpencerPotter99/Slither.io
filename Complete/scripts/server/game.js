@@ -69,11 +69,19 @@ function processInput(elapsedTime) {
             case NetworkIds.INPUT_ROTATE_RIGHT:
                 client.player.rotateRight(input.message.elapsedTime);
                 break;
+            case NetworkIds.INPUT_ROTATE_SOUTH_EAST:
+                client.player.rotateSouthEast(input.message.elapsedTime);
+                break;
+            case NetworkIds.INPUT_ROTATE_UP:
+                client.player.rotateUp(input.message.elapsedTime);
+                break;
+            case NetworkIds.INPUT_ROTATE_DOWN:
+                client.player.rotateDown(input.message.elapsedTime);
+                break;
             case NetworkIds.INPUT_FIRE:
                 createMissile(input.clientId, client.player);
                 break;
             case NetworkIds.INPUT_ADD_SEGMENT:
-                console.log("test")
                 client.player.addSegment();
                 break;
         }

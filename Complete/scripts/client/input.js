@@ -3,11 +3,12 @@
 // Keyboard input handling support
 //
 // ------------------------------------------------------------------
-MyGame.input.Keyboard = function() {
+MyGame.input.Keyboard = function () {
     'use strict';
     let keys = {},
         keyRepeat = {},
         handlers = {},
+        multiHandlers = {},
         nextHandlerId = 0,
         that = {};
 
@@ -16,7 +17,7 @@ MyGame.input.Keyboard = function() {
     // Allows the client code to register a keyboard handler.
     //
     // ------------------------------------------------------------------
-    that.registerHandler = function(handler, key, repeat, rate) {
+    that.registerHandler = function (handler, keysArray, repeat, rate) {
         //
         // If no repeat rate was passed in, use a value of 0 so that no delay between
         // repeated keydown events occurs.
@@ -24,26 +25,49 @@ MyGame.input.Keyboard = function() {
             rate = 0;
         }
 
-        //
-        // Each entry is an array of handlers to allow multiple handlers per keyboard input
-        if (!handlers.hasOwnProperty(key)) {
-            handlers[key] = [];
+        if (Array.isArray(keysArray)) {
+            keysArray.forEach(key => {
+                if (!handlers.hasOwnProperty(key)) {
+                    handlers[key] = [];
+                }
+                handlers[key].push({
+                    id: nextHandlerId,
+                    key: key,
+                    repeat: repeat,
+                    rate: rate,
+                    elapsedTime: rate, // Initialize an initial elapsed time so the very first keypress will be valid
+                    handler: handler
+                });
+            });
+        } else {
+            if (!handlers.hasOwnProperty(keysArray)) {
+                handlers[keysArray] = [];
+            }
+            handlers[keysArray].push({
+                id: nextHandlerId,
+                key: keysArray,
+                repeat: repeat,
+                rate: rate,
+                elapsedTime: rate, // Initialize an initial elapsed time so the very first keypress will be valid
+                handler: handler
+            });
         }
-        handlers[key].push({
-            id: nextHandlerId,
-            key: key,
-            repeat: repeat,
-            rate: rate,
-            elapsedTime: rate,    // Initialize an initial elapsed time so the very first keypress will be valid
-            handler: handler
-        });
 
         nextHandlerId += 1;
 
         //
         // We return an handler id that client code must track if it is desired
         // to unregister the handler in the future.
-        return handlers[key][handlers[key].length - 1].id;
+        return nextHandlerId - 1;
+    };
+
+    that.registerMultiKeyHandler = function (handler, keysArray) {
+        if (!Array.isArray(keysArray) || keysArray.length < 2) {
+            return;
+        }
+
+        multiHandlers[keysArray] = multiHandlers[keysArray] || [];
+        multiHandlers[keysArray].push(handler);
     };
 
     // ------------------------------------------------------------------
@@ -51,7 +75,7 @@ MyGame.input.Keyboard = function() {
     // Allows the client code to unregister a keyboard handler.
     //
     // ------------------------------------------------------------------
-    that.unregisterHandler = function(key, id) {
+    that.unregisterHandler = function (key, id) {
         if (handlers.hasOwnProperty(key)) {
             for (let entry = 0; entry < handlers[key].length; entry += 1) {
                 if (handlers[key][entry].id === id) {
@@ -96,7 +120,7 @@ MyGame.input.Keyboard = function() {
     // Allows the client to invoke all the handlers for the registered key/handlers.
     //
     // ------------------------------------------------------------------
-    that.update = function(elapsedTime) {
+    that.update = function (elapsedTime) {
         for (let key in keys) {
             if (handlers.hasOwnProperty(key)) {
                 for (let entry = 0; entry < handlers[key].length; entry += 1) {
@@ -120,7 +144,24 @@ MyGame.input.Keyboard = function() {
                 }
             }
         }
+        multiKeyHandlers(elapsedTime);
     };
+
+    function multiKeyHandlers(elapsedTime) {
+        for (let keysArray in multiHandlers) {
+            if (areAllKeysPressed(keysArray)) {
+                multiHandlers[keysArray].forEach(handler => handler(elapsedTime));
+            }
+        }
+    }
+
+    function areAllKeysPressed(keysArray) {
+        if (!Array.isArray(keysArray)) {
+            return false;
+        }
+
+        return keysArray.every(key => keys[key]);
+    }
 
     //
     // This is how we receive notification of keyboard events.

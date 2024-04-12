@@ -165,6 +165,12 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 case NetworkIds.MOVE:
                     playerSelf.model.move(message.elapsedTime);
                     break;
+                case NetworkIds.ROTATE_UP:
+                    playerSelf.model.rotateUp(message.elapsedTime);
+                    break;
+                case NetworkIds.ROTATE_DOWN:
+                    playerSelf.model.rotateDown(message.elapsedTime);
+                    break;
                 case NetworkIds.ROTATE_RIGHT:
                     playerSelf.model.rotateRight(message.elapsedTime);
                     break;
@@ -357,18 +363,30 @@ MyGame.main = (function(graphics, renderer, input, components) {
     function initialize() {
         console.log('game initializing...');
         //
-        // Create the keyboard input handler and register the keyboard commands
+        // Registering the 'wd' key combination handler
+        myKeyboard.registerHandler(elapsedTime => {
+            let message = {
+                id: messageId++,
+                elapsedTime: elapsedTime,
+                type: NetworkIds.INPUT_ROTATE_SOUTH_EAST
+            };
+            socket.emit(NetworkIds.INPUT, message);
+            messageHistory.enqueue(message);
+            playerSelf.model.rotateSouthEast(elapsedTime);
+        },
+        ['w','d'], true);
+
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
                     id: messageId++,
                     elapsedTime: elapsedTime,
-                    type: NetworkIds.INPUT_MOVE
+                    type: NetworkIds.INPUT_ROTATE_UP
                 };
                 socket.emit(NetworkIds.INPUT, message);
                 messageHistory.enqueue(message);
-                playerSelf.model.move(elapsedTime);
+                playerSelf.model.rotateUp(elapsedTime);
             },
-            'w', true);
+            ['w'], true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -380,7 +398,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateRight(elapsedTime);
             },
-            'd', true);
+            ['d'], true);
+
 
             myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -391,7 +410,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 socket.emit(NetworkIds.INPUT, message);
                 messageHistory.enqueue(message);
                 playerSelf.model.addSegment();
-                console.log("test")
             },
             't', true);
 
@@ -406,6 +424,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 playerSelf.model.rotateLeft(elapsedTime);
             },
             'a', true);
+        myKeyboard.registerHandler(elapsedTime => {
+            let message = {
+                id: messageId++,
+                elapsedTime: elapsedTime,
+                type: NetworkIds.INPUT_ROTATE_DOWN
+            };
+            socket.emit(NetworkIds.INPUT, message);
+            messageHistory.enqueue(message);
+            playerSelf.model.rotateDown(elapsedTime);
+        },
+        's', true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {

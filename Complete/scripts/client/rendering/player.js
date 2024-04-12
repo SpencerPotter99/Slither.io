@@ -19,8 +19,10 @@ MyGame.renderer.Player = (function(graphics) {
         graphics.restoreContext();
         let segments = model.segments
         for (let i = 0; i < segments?.length; i++) {
+            graphics.saveContext();
             graphics.rotateCanvas(segments[i].position, segments[i].direction);
             graphics.drawImage(segmentTexure, segments[i].position, segments[i].size)
+            graphics.restoreContext();
         }
         graphics.restoreContext();
     };

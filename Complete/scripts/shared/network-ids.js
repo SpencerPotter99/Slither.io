@@ -24,8 +24,20 @@
             value: 'rotate-left',
             writable: false
         },
+        'INPUT_ROTATE_SOUTH_EAST': {
+            value: 'rotate-south_east',
+            writable: false
+        },
         'INPUT_ROTATE_RIGHT': {
             value: 'rotate-right',
+            writable: false
+        },
+        'INPUT_ROTATE_UP': {
+            value: 'rotate-up',
+            writable: false
+        },
+        'INPUT_ROTATE_DOWN': {
+            value: 'rotate-down',
             writable: false
         },
         'INPUT_ADD_SEGMENT': {
