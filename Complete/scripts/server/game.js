@@ -115,37 +115,25 @@ function update(elapsedTime, currentTime) {
                 if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
                     console.log("HIT")
                     //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
+                    //you need to mess around with the radius
+                }
+
+                for(let i = 0; i < activeClients[otherClientId].player.segments.length; i++){
+                    let obj1 = { position:{
+                        x:activeClients[otherClientId].player.segments[i].position.x, 
+                        y: activeClients[otherClientId].player.segments[i].position.y,
+                        },
+                        radius: activeClients[otherClientId].player.segments[i].size.radius
+                    }
+                    if (collided(obj1, activeClients[clientId].player)) {
+                        console.log("HIT segment")
+                        console.log(i)
+
+                    }
+                    
                 }
             }
         }
-        // for(let i = 0; i <activeClients[clientId].player.segments.length; i++){
-        //     for(let newClientId in activeClients){
-        //         if(newClientId !== activeClients[clientId].player.clientId){
-        //             let obj1 = { position:{
-        //                 x:activeClients[clientId].player.segments[i].position.x, 
-        //                 y: activeClients[clientId].player.segments[i].position.y,
-        //             },
-        //                 radius: activeClients[clientId].player.segments[i].size.radius
-        //             }
-        //             if (collided(obj1, activeClients[clientId].player)) {
-                        
-        //                 console.log("HIT")
-        //                 console.log(activeClients[clientId].player.clientId)
-        //                 console.log(newClientId)
-        //             }
-        //             else{
-        //                 console.log("MISS")
-        //                 console.log(activeClients[clientId].player.clientId)
-        //                 console.log(newClientId)
-        //             }
-        //         }
-        //         else{
-        //             console.log("TEST")
-        //             console.log(activeClients[clientId].player.clientId)
-        //                 console.log(newClientId)
-        //         }
-        //     }
-        // }
     }
 
     for (let missile = 0; missile < newMissiles.length; missile++) {

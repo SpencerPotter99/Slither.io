@@ -24,7 +24,7 @@ function createPlayer() {
     let size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.03
+        radius: 0.15
     };
     let direction = random.nextDouble() * 2 * Math.PI; // Angle in radians
     let rotateRate = Math.PI / 1000; // radians per millisecond
@@ -200,7 +200,7 @@ function createSegment(playerPosition) {
     segment.size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.03
+        radius: 0.15
     };
     segment.speed = 0.0002; // Speed of the segment
     segment.targetsQueue = []
