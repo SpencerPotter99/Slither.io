@@ -10,23 +10,14 @@
 // Public function used to initially create a newly fired missile.
 //
 //------------------------------------------------------------------
-function createMissile(spec) {
+function create(spec) {
     let that = {};
 
-    let radius = 0.0025;
-    let speed = spec.speed + 0.0002;    // unit distance per millisecond
+    let radius = 0.0025;   
     let timeRemaining = 1500;   // milliseconds
-
-    Object.defineProperty(that, 'clientId', {
-        get: () => spec.clientId
-    });
 
     Object.defineProperty(that, 'id', {
         get: () => spec.id
-    });
-
-    Object.defineProperty(that, 'direction', {
-        get: () => spec.direction
     });
 
     Object.defineProperty(that, 'position', {
@@ -35,10 +26,6 @@ function createMissile(spec) {
 
     Object.defineProperty(that, 'radius', {
         get: () => radius
-    });
-
-    Object.defineProperty(that, 'speed', {
-        get: () => speed
     });
 
     Object.defineProperty(that, 'timeRemaining', {
@@ -51,14 +38,7 @@ function createMissile(spec) {
     //
     //------------------------------------------------------------------
     that.update = function(elapsedTime) {
-        let vectorX = Math.cos(spec.direction);
-        let vectorY = Math.sin(spec.direction);
-
-        spec.position.x += (vectorX * elapsedTime * speed);
-        spec.position.y += (vectorY * elapsedTime * speed);
-
         timeRemaining -= elapsedTime;
-
         if (timeRemaining <= 0) {
             return false;
         } else {
@@ -69,4 +49,4 @@ function createMissile(spec) {
     return that;
 }
 
-module.exports.create = (spec) => createMissile(spec);
+module.exports.create = (spec) => create(spec);

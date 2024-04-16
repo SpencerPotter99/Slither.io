@@ -1,15 +1,15 @@
 // ------------------------------------------------------------------
 //
-// Rendering function for a Missile object.
+// Rendering function for a Food object.
 //
 // ------------------------------------------------------------------
-MyGame.renderer.Missile = (function(graphics) {
+MyGame.renderer.Food = (function(graphics) {
     'use strict';
     let that = {};
 
     // ------------------------------------------------------------------
     //
-    // Renders a Missile model.
+    // Renders a Food model.
     //
     // ------------------------------------------------------------------
     that.render = function(model, texture) {
