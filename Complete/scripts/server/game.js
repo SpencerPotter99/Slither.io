@@ -7,7 +7,7 @@
 
 let present = require('present');
 let Player = require('./player');
-let Missile = require('./missile');
+let Food = require('./food');
 let NetworkIds = require('../shared/network-ids');
 let Queue = require('../shared/queue.js');
 
@@ -16,31 +16,30 @@ const STATE_UPDATE_RATE_MS = 100;
 let lastUpdate = 0;
 let quit = false;
 let activeClients = {};
-let newMissiles = [];
-let activeMissiles = [];
+let newFoods = [];
+let activeFood = [];
 let hits = [];
+let segmentHits = []
 let inputQueue = Queue.create();
-let nextMissileId = 1;
+let nextFoodId = 1;
 
 //------------------------------------------------------------------
 //
-// Used to create a missile in response to user input.
+// Used to create a food in response to user input.
 //
 //------------------------------------------------------------------
-function createMissile(clientId, playerModel) {
-    let missile = Missile.create({
-        id: nextMissileId++,
-        clientId: clientId,
+function createFood(position) {
+    let food = Food.create({
+        id: nextFoodId++,
         position: {
-            x: playerModel.position.x,
-            y: playerModel.position.y
-        },
-        direction: playerModel.direction,
-        speed: playerModel.speed
+            x: position.x,
+            y: position.y
+        }
     });
-
-    newMissiles.push(missile);
-}
+    newFoods.push(food);
+    
+    
+}  
 
 //------------------------------------------------------------------
 //
@@ -118,12 +117,12 @@ function update(elapsedTime, currentTime) {
                         console.log("HIT")
                         //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
                         //you need to mess around with the radius
-                        hits.push({
+                        segmentHits.push({
                             position: activeClients[clientId].player.position,
                             clientId: clientId
                         })
                         for (let i = 0; i < activeClients[clientId].player.segments.length; i++){
-                            hits.push({
+                            segmentHits.push({
                                 position: activeClients[clientId].player.segments[i].position,
                                 clientId: clientId
                             })
@@ -139,12 +138,12 @@ function update(elapsedTime, currentTime) {
                         }
                         if (collided(obj1, activeClients[clientId].player)) {
                             console.log("HIT segment")
-                            hits.push({
+                           segmentHits.push({
                                 position: activeClients[clientId].player.position,
                                 clientId: clientId
                             })
                             for (let j = 0; j < activeClients[clientId].player.segments.length; j++){
-                                hits.push({
+                                segmentHits.push({
                                     position: activeClients[clientId].player.segments[j].position,
                                     clientId: clientId
                                 })
@@ -160,45 +159,55 @@ function update(elapsedTime, currentTime) {
         }
     }
 
-    for (let missile = 0; missile < newMissiles.length; missile++) {
-        newMissiles[missile].update(elapsedTime);
+    for (let food = 0; food < newFoods.length; food++) {
+        newFoods[food].update(elapsedTime);
     }
-
-    let keepMissiles = [];
-    for (let missile = 0; missile < activeMissiles.length; missile++) {
+    
+   
+    let keepFoods = [];
+    for (let food = 0; food < activeFood.length; food++) {
         //
-        // If update returns false, that means the missile lifetime ended and
-        // we don't keep it around any longer.
-        if (activeMissiles[missile].update(elapsedTime)) {
-            keepMissiles.push(activeMissiles[missile]);
+        // If update returns false, that means the food lifetime ended and
+        if (activeFood[food].update(elapsedTime)) {
+            keepFoods.push(activeFood[food]);
         }
     }
-    activeMissiles = keepMissiles;
+    activeFood = keepFoods;
+    
 
     //
     // Check to see if any missiles collide with any players (no friendly fire)
-    keepMissiles = [];
-    for (let missile = 0; missile < activeMissiles.length; missile++) {
+    keepFoods = [];
+    for (let food = 0; food < activeFood.length; food++) {
         let hit = false;
         for (let clientId in activeClients) {
-            //
-            // Don't allow a missile to hit the player it was fired from.
-            if (clientId !== activeMissiles[missile].clientId) {
-                if (collided(activeMissiles[missile], activeClients[clientId].player)) {
+                if (collided(activeFood[food], activeClients[clientId].player)) {
                     hit = true;
                     hits.push({
                         clientId: clientId,
-                        missileId: activeMissiles[missile].id,
+                        foodId: activeFood[food].id,
                         position: activeClients[clientId].player.position
                     });
                 }
-            }
         }
         if (!hit) {
-            keepMissiles.push(activeMissiles[missile]);
+            keepFoods.push(activeFood[food]);
         }
     }
-    activeMissiles = keepMissiles;
+    activeFood = keepFoods;
+    if ((activeFood.length + newFoods.length) < 100){
+        while (activeFood.length + newFoods.length < 100) {
+            // Generate a new food item
+            let x = Math.random(); // Random x-coordinate between 0 (inclusive) and 1 (exclusive)
+            let y = Math.random();
+            let position = {x:x, y:y};
+            createFood(position);
+            
+
+            
+        }
+    }
+    
 }
 
 //------------------------------------------------------------------
@@ -216,29 +225,29 @@ function updateClients(elapsedTime) {
     }
 
     //
-    // Build the missile messages one time, then reuse inside the loop
-    let missileMessages = [];
-    for (let item = 0; item < newMissiles.length; item++) {
-        let missile = newMissiles[item];
-        missileMessages.push({
-            id: missile.id,
-            direction: missile.direction,
+    // Build the food messages one time, then reuse inside the loop
+    let foodMessages = [];
+    for (let item = 0; item < newFoods.length; item++) {
+        let food = newFoods[item];
+        foodMessages.push({
+            id: food.id,
             position: {
-                x: missile.position.x,
-                y: missile.position.y
+                x: food.position.x,
+                y: food.position.y
             },
-            radius: missile.radius,
-            speed: missile.speed,
-            timeRemaining: missile.timeRemaining
+            radius: food.radius,
+            timeRemaining: food.timeRemaining
         });
     }
 
     //
     // Move all the new missiles over to the active missiles array
-    for (let missile = 0; missile < newMissiles.length; missile++) {
-        activeMissiles.push(newMissiles[missile]);
+
+    for (let food = 0; food < newFoods.length; food++) {
+        
+        activeFood.push(newFoods[food]);
     }
-    newMissiles.length = 0;
+    newFoods.length = 0;
 
     for (let clientId in activeClients) {
         let client = activeClients[clientId];
@@ -266,14 +275,13 @@ function updateClients(elapsedTime) {
 
         //
         // Report any new missiles to the active clients
-        for (let missile = 0; missile < missileMessages.length; missile++) {
-            client.socket.emit(NetworkIds.MISSILE_NEW, missileMessages[missile]);
+        for (let food = 0; food < foodMessages.length; food++) {
+            
+            client.socket.emit(NetworkIds.FOOD_NEW, foodMessages[food]);
         }
-
-        //
-        // Report any missile hits to this client
-        for (let hit = 0; hit < hits.length; hit++) {
-            let hitInfo = hits[hit]
+      
+      for (let hit = 0; hit < segmentHits.length; hit++) {
+            let hitInfo = segmentHits[hit]
             client.socket.emit(NetworkIds.SNAKE_HIT, hitInfo);
             if(hitInfo.clientId === clientId){
                 client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
@@ -283,6 +291,12 @@ function updateClients(elapsedTime) {
                 
                 //delete activeClients[clientId];
             }
+        }
+
+        //
+        // Report any food hits to this client
+        for (let hit = 0; hit < hits.length; hit++) {
+            client.socket.emit(NetworkIds.FOOD_HIT, hits[hit]);
         }
     }
 

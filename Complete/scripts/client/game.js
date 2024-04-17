@@ -14,7 +14,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             segmentTexure: MyGame.assets['player-segment']
         },
         playerOthers = {},
-        missiles = {},
+        foods = {},
         explosions = {},
         messageHistory = Queue.create(),
         messageId = 1,
@@ -67,9 +67,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
         });
     });
 
-    socket.on(NetworkIds.MISSILE_NEW, data => {
+    socket.on(NetworkIds.FOOD_NEW, data => {
+       
         networkQueue.enqueue({
-            type: NetworkIds.MISSILE_NEW,
+            type: NetworkIds.FOOD_NEW,
             data: data
         });
     });
@@ -88,9 +89,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         });
     });
 
-    socket.on(NetworkIds.MISSILE_HIT, data => {
+    socket.on(NetworkIds.FOOD_HIT, data => {
         networkQueue.enqueue({
-            type: NetworkIds.MISSILE_HIT,
+            type: NetworkIds.FOOD_HIT,
             data: data
         });
     });
@@ -233,29 +234,30 @@ MyGame.main = (function(graphics, renderer, input, components) {
 
     //------------------------------------------------------------------
     //
-    // Handler for receiving notice of a new missile in the environment.
+    // Handler for receiving notice of a new food in the environment.
     //
     //------------------------------------------------------------------
-    function missileNew(data) {
-        missiles[data.id] = components.Missile({
+    function foodNew(data) {
+        foods[data.id] = components.Food({
             id: data.id,
             radius: data.radius,
-            speed: data.speed,
-            direction: data.direction,
             position: {
                 x: data.position.x,
                 y: data.position.y
             },
             timeRemaining: data.timeRemaining
+            
         });
+        console.log(foods)
     }
 
     //------------------------------------------------------------------
     //
-    // Handler for receiving notice that a missile has hit a player.
+    // Handler for receiving notice that a food has hit a player.
     //
     //------------------------------------------------------------------
-    function missileHit(data) {
+    function foodHit(data, elapsedTime) {
+        //replace with animation for eating food and adding a segment
         explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
             spriteSheet: MyGame.assets['explosion'],
@@ -264,11 +266,20 @@ MyGame.main = (function(graphics, renderer, input, components) {
             spriteCount: 16,
             spriteTime: [ 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250]
         });
+        let message = {
+            id: messageId++,
+            elapsedTime: elapsedTime,
+            type: NetworkIds.INPUT_ADD_SEGMENT
+        };
+        socket.emit(NetworkIds.INPUT, message);
+        messageHistory.enqueue(message);
+        playerSelf.model.addSegment();
+        console.log("added")
 
         //
         // When we receive a hit notification, go ahead and remove the
         // associated missle from the client model.
-        delete missiles[data.missileId];
+        delete foods[data.foodId];
     }
 
     function snakeHit(data) {
@@ -359,11 +370,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 case NetworkIds.UPDATE_OTHER:
                     updatePlayerOther(message.data);
                     break;
-                case NetworkIds.MISSILE_NEW:
-                    missileNew(message.data);
+                case NetworkIds.FOOD_NEW:
+                    foodNew(message.data);
                     break;
-                case NetworkIds.MISSILE_HIT:
-                    missileHit(message.data);
+                case NetworkIds.FOOD_HIT:
+                    foodHit(message.data, elapsedTime);
                     break;
                 case NetworkIds.SNAKE_HIT:
                     snakeHit(message.data);
@@ -386,15 +397,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
             playerOthers[id].model.update(elapsedTime);
         }
 
-        let removeMissiles = [];
-        for (let missile in missiles) {
-            if (!missiles[missile].update(elapsedTime)) {
-                removeMissiles.push(missiles[missile]);
+        let removefoods = [];
+       
+        for (let food in foods) {
+            
+            if (!foods[food].update(elapsedTime)) {
+                removefoods.push(foods[food]);
             }
         }
 
-        for (let missile = 0; missile < removeMissiles.length; missile++) {
-            delete missiles[removeMissiles[missile].id];
+        for (let food = 0; food < removefoods.length; food++) {
+            delete foods[removefoods[food].id];
         }
 
         for (let id in explosions) {
@@ -423,9 +436,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
             }
         }
-
-        for (let missile in missiles) {
-            renderer.Missile.render(missiles[missile]);
+        
+        for (let food in foods) {
+            renderer.Food.render(foods[food]);
         }
 
         for (let id in explosions) {
@@ -507,6 +520,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 socket.emit(NetworkIds.INPUT, message);
                 messageHistory.enqueue(message);
                 playerSelf.model.addSegment();
+
             },
             't', true);
 
@@ -532,16 +546,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
             playerSelf.model.rotateDown(elapsedTime);
         },
         's', true);
-
-        myKeyboard.registerHandler(elapsedTime => {
-                let message = {
-                    id: messageId++,
-                    elapsedTime: elapsedTime,
-                    type: NetworkIds.INPUT_FIRE
-                };
-                socket.emit(NetworkIds.INPUT, message);
-            },
-            ' ', false);
 
         //
         // Get the game loop started

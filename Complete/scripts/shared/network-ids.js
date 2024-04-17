@@ -44,10 +44,7 @@
             value: 'add-segment',
             writable: false
         },
-        'INPUT_FIRE': {
-            value: 'fire',
-            writable: false
-        },
+        
         'CONNECT_ACK': {
             value: 'connect-ack',
             writable: false
@@ -68,12 +65,12 @@
             value: 'update-other',
             writable: false
         },
-        'MISSILE_NEW': {
-            value: 'missile-new',
+        'FOOD_NEW': {
+            value: 'food-new',
             writable: false
         },
-        'MISSILE_HIT': {
-            value: 'missile-hit',
+        'FOOD_HIT': {
+            value: 'food-hit',
             writable: false
         },
         'SNAKE_HIT': {
