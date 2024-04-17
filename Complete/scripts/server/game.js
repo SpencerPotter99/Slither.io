@@ -10,7 +10,7 @@ let Player = require('./player');
 let Food = require('./food');
 let NetworkIds = require('../shared/network-ids');
 let Queue = require('../shared/queue.js');
-
+let FoodAMT = 5;
 const SIMULATION_UPDATE_RATE_MS = 50;
 const STATE_UPDATE_RATE_MS = 100;
 let lastUpdate = 0;
@@ -195,8 +195,8 @@ function update(elapsedTime, currentTime) {
         }
     }
     activeFood = keepFoods;
-    if ((activeFood.length + newFoods.length) < 100){
-        while (activeFood.length + newFoods.length < 100) {
+    if ((activeFood.length + newFoods.length) < FoodAMT){
+        while (activeFood.length + newFoods.length < FoodAMT) {
             // Generate a new food item
             let x = Math.random(); // Random x-coordinate between 0 (inclusive) and 1 (exclusive)
             let y = Math.random();
