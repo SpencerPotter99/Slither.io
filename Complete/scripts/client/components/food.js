@@ -3,7 +3,7 @@
 // Model for each missile in the game.
 //
 //------------------------------------------------------------------
-MyGame.components.Missile = function(spec) {
+MyGame.components.Food = function(spec) {
     'use strict';
     let that = {};
 
@@ -27,11 +27,7 @@ MyGame.components.Missile = function(spec) {
     //
     //------------------------------------------------------------------
     that.update = function(elapsedTime) {
-        let vectorX = Math.cos(spec.direction);
-        let vectorY = Math.sin(spec.direction);
 
-        spec.position.x += (vectorX * elapsedTime * spec.speed);
-        spec.position.y += (vectorY * elapsedTime * spec.speed);
 
         spec.timeRemaining -= elapsedTime;
 
