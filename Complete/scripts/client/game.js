@@ -21,7 +21,16 @@ MyGame.main = (function(graphics, renderer, input, components) {
         nextExplosionId = 1,
         socket = io(),
         networkQueue = Queue.create();
+        let particles = {}
+        let particlesFire = components.ParticleSystem({
+            center: { x: playerSelf.model.position?.x, y: playerSelf.model.position.y },
+            size: { mean: 10, stdev: 4 },
+            speed: { mean: 50, stdev: 25 },
+            lifetime: { mean: 2, stdev: 1 }
+        },
+        graphics);
 
+        let renderFire = renderer.ParticleSystem(particlesFire, graphics, MyGame.assets['particle-fire'])
     
     socket.on(NetworkIds.CONNECT_ACK, data => {
         networkQueue.enqueue({
@@ -61,6 +70,20 @@ MyGame.main = (function(graphics, renderer, input, components) {
     socket.on(NetworkIds.MISSILE_NEW, data => {
         networkQueue.enqueue({
             type: NetworkIds.MISSILE_NEW,
+            data: data
+        });
+    });
+
+    socket.on(NetworkIds.SNAKE_HIT, data => {
+        networkQueue.enqueue({
+            type: NetworkIds.SNAKE_HIT,
+            data: data
+        });
+    });
+
+    socket.on(NetworkIds.DEAD_SNAKE, data => {
+        networkQueue.enqueue({
+            type: NetworkIds.DEAD_SNAKE,
             data: data
         });
     });
@@ -139,51 +162,56 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function updatePlayerSelf(data) {
-        playerSelf.model.position.x = data.position.x;
-        playerSelf.model.position.y = data.position.y;
-        playerSelf.model.direction = data.direction;
-        playerSelf.model.segments = data.segments
 
-        //
-        // Remove messages from the queue up through the last one identified
-        // by the server as having been processed.
-        let done = false;
-        while (!done && !messageHistory.empty) {
-            if (messageHistory.front.id === data.lastMessageId) {
-                done = true;
-            }
-            messageHistory.dequeue();
-        }
+        if(!data.dead){
+            playerSelf.model.position.x = data.position.x;
+            playerSelf.model.position.y = data.position.y;
+            playerSelf.model.direction = data.direction;
+            playerSelf.model.segments = data.segments
 
-        //
-        // Update the client simulation since this last server update, by
-        // replaying the remaining inputs.
-        let memory = Queue.create();
-        while (!messageHistory.empty) {
-            let message = messageHistory.dequeue();
-            switch (message.type) {
-                case NetworkIds.MOVE:
-                    playerSelf.model.move(message.elapsedTime);
-                    break;
-                case NetworkIds.ROTATE_UP:
-                    playerSelf.model.rotateUp(message.elapsedTime);
-                    break;
-                case NetworkIds.ROTATE_DOWN:
-                    playerSelf.model.rotateDown(message.elapsedTime);
-                    break;
-                case NetworkIds.ROTATE_RIGHT:
-                    playerSelf.model.rotateRight(message.elapsedTime);
-                    break;
-                case NetworkIds.ROTATE_LEFT:
-                    playerSelf.model.rotateLeft(message.elapsedTime);
-                    break;
-                case NetworkIds.ADD_SEGMENT:
-                    playerSelf.model.addSegment();
-                    break;
+            //
+            // Remove messages from the queue up through the last one identified
+            // by the server as having been processed.
+            let done = false;
+            while (!done && !messageHistory.empty) {
+                if (messageHistory.front.id === data.lastMessageId) {
+                    done = true;
+                }
+                messageHistory.dequeue();
             }
-            memory.enqueue(message);
+
+            //
+            // Update the client simulation since this last server update, by
+            // replaying the remaining inputs.
+            let memory = Queue.create();
+            while (!messageHistory.empty) {
+                let message = messageHistory.dequeue();
+                switch (message.type) {
+                    case NetworkIds.MOVE:
+                        playerSelf.model.move(message.elapsedTime);
+                        break;
+                    case NetworkIds.ROTATE_UP:
+                        playerSelf.model.rotateUp(message.elapsedTime);
+                        break;
+                    case NetworkIds.ROTATE_DOWN:
+                        playerSelf.model.rotateDown(message.elapsedTime);
+                        break;
+                    case NetworkIds.ROTATE_RIGHT:
+                        playerSelf.model.rotateRight(message.elapsedTime);
+                        break;
+                    case NetworkIds.ROTATE_LEFT:
+                        playerSelf.model.rotateLeft(message.elapsedTime);
+                        break;
+                    case NetworkIds.ADD_SEGMENT:
+                        playerSelf.model.addSegment();
+                        break;
+                }
+                memory.enqueue(message);
+            }
+            messageHistory = memory;
+        } else{
+            playerSelf.model.dead = true
         }
-        messageHistory = memory;
     }
 
     //------------------------------------------------------------------
@@ -195,7 +223,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         if (playerOthers.hasOwnProperty(data.clientId)) {
             let model = playerOthers[data.clientId].model;
             model.goal.updateWindow = data.updateWindow;
-
+            model.goal.dead = data.dead
             model.goal.segments = data.segments
             model.goal.position.x = data.position.x;
             model.goal.position.y = data.position.y
@@ -234,13 +262,67 @@ MyGame.main = (function(graphics, renderer, input, components) {
             spriteSize: { width: 0.07, height: 0.07 },
             spriteCenter: data.position,
             spriteCount: 16,
-            spriteTime: [ 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+            spriteTime: [ 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250]
         });
 
         //
         // When we receive a hit notification, go ahead and remove the
         // associated missle from the client model.
         delete missiles[data.missileId];
+    }
+
+    function snakeHit(data) {
+        explosions[nextExplosionId] = components.AnimatedSprite({
+            id: nextExplosionId++,
+            spriteSheet: MyGame.assets['explosion'],
+            spriteSize: { width: 0.07, height: 0.07 },
+            spriteCenter: data.position,
+            spriteCount: 16,
+            spriteTime: [ 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150]
+        });
+
+        //
+        // When we receive a hit notification, go ahead and remove the
+        // associated missle from the client model.
+        //delete missiles[data.missileId];
+        particles[nextExplosionId] = components.ParticleSystem({
+            center: { x: data.position?.x, y: data.position.y },
+            size: { mean: 10, stdev: 4 },
+            speed: { mean: 50, stdev: 25 },
+            lifetime: { mean: 4, stdev: 1 }
+        },
+        graphics);
+
+    }
+
+    function dead(data) {
+        let winGameContainer = document.getElementById('new-game');
+        winGameContainer.innerHTML = '';
+        
+        // Create a heading element
+        let winGameText = document.createElement('h2');
+        winGameText.textContent = "You DIED!";
+        
+        // Create a button element
+        let returnToMenuButton = document.createElement('button');
+        returnToMenuButton.textContent = "Return to Menu";
+        
+        // Add click event listener to the button
+        returnToMenuButton.addEventListener('click', function() {
+            // Redirect to /menu
+            window.location.href = '/';
+        });
+        
+        // Style the container
+        winGameContainer.style.backgroundColor = "rgba(0, 217, 255, 0.5)";
+        winGameContainer.style.border = "1px solid rgba(0, 204, 255, 0.5)";
+        winGameContainer.style.backdropFilter = "blur(10px)";
+        winGameContainer.style.boxShadow = "0 1px 12px rgba(0,0,0,0.25)";
+        
+        // Append elements to the container
+        winGameContainer.appendChild(winGameText);
+        winGameContainer.appendChild(returnToMenuButton);
+
     }
 
     //------------------------------------------------------------------
@@ -283,6 +365,12 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 case NetworkIds.MISSILE_HIT:
                     missileHit(message.data);
                     break;
+                case NetworkIds.SNAKE_HIT:
+                    snakeHit(message.data);
+                    break;
+                case NetworkIds.DEAD_SNAKE:
+                    dead(message.data);
+                    break;
             }
         }
     }
@@ -310,7 +398,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
 
         for (let id in explosions) {
+            //particlesFire.update(elapsedTime)
             if (!explosions[id].update(elapsedTime)) {
+                //particles[id].update(elapsedTime)
                 delete explosions[id];
             }
         }
@@ -323,10 +413,15 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function render() {
         graphics.clear();
-        renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
+        if(!playerSelf.model.dead){
+            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
+        }
         for (let id in playerOthers) {
             let player = playerOthers[id];
-            renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
+
+            if(!player.model.goal.dead){
+                renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
+            }
         }
 
         for (let missile in missiles) {
@@ -335,6 +430,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
 
         for (let id in explosions) {
             renderer.AnimatedSprite.render(explosions[id]);
+            //renderer.ParticleSystem(particles[id], graphics, MyGame.assets['particle-fire'])
+            //renderFire.render()
         }
     }
 

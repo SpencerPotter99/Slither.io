@@ -108,31 +108,55 @@ function collided(obj1, obj2) {
 //------------------------------------------------------------------
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
-        activeClients[clientId].player.move(elapsedTime)
-        activeClients[clientId].player.update(currentTime);
-        for (let otherClientId in activeClients){
-            if(otherClientId !== activeClients[clientId].player.clientId){
-                if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
-                    console.log("HIT")
-                    //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
-                    //you need to mess around with the radius
-                }
 
-                for(let i = 0; i < activeClients[otherClientId].player.segments.length; i++){
-                    let obj1 = { position:{
-                        x:activeClients[otherClientId].player.segments[i].position.x, 
-                        y: activeClients[otherClientId].player.segments[i].position.y,
-                        },
-                        radius: activeClients[otherClientId].player.segments[i].size.radius
+        if( !activeClients[clientId].player.dead){
+            activeClients[clientId].player.update(currentTime);
+            activeClients[clientId].player.move(elapsedTime)
+            for (let otherClientId in activeClients){
+                if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead){
+                    if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
+                        console.log("HIT")
+                        //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
+                        //you need to mess around with the radius
+                        hits.push({
+                            position: activeClients[clientId].player.position,
+                            clientId: clientId
+                        })
+                        for (let i = 0; i < activeClients[clientId].player.segments.length; i++){
+                            hits.push({
+                                position: activeClients[clientId].player.segments[i].position,
+                                clientId: clientId
+                            })
+                        }
                     }
-                    if (collided(obj1, activeClients[clientId].player)) {
-                        console.log("HIT segment")
-                        console.log(i)
 
+                    for(let i = 0; i < activeClients[otherClientId].player.segments.length; i++){
+                        let obj1 = { position:{
+                            x:activeClients[otherClientId].player.segments[i].position.x, 
+                            y: activeClients[otherClientId].player.segments[i].position.y,
+                            },
+                            radius: activeClients[otherClientId].player.segments[i].size.radius
+                        }
+                        if (collided(obj1, activeClients[clientId].player)) {
+                            console.log("HIT segment")
+                            hits.push({
+                                position: activeClients[clientId].player.position,
+                                clientId: clientId
+                            })
+                            for (let j = 0; j < activeClients[clientId].player.segments.length; j++){
+                                hits.push({
+                                    position: activeClients[clientId].player.segments[j].position,
+                                    clientId: clientId
+                                })
+                            }
+
+                        }
+                        
                     }
-                    
                 }
             }
+        }else{
+            activeClients[clientId].player.snakeHit(currentTime)
         }
     }
 
@@ -224,6 +248,7 @@ function updateClients(elapsedTime) {
             direction: client.player.direction,
             position: client.player.position,
             segments: client.player.segments,
+            dead: client.player.dead,
             updateWindow: lastUpdate
         };
         if (client.player.reportUpdate) {
@@ -248,7 +273,16 @@ function updateClients(elapsedTime) {
         //
         // Report any missile hits to this client
         for (let hit = 0; hit < hits.length; hit++) {
-            client.socket.emit(NetworkIds.MISSILE_HIT, hits[hit]);
+            let hitInfo = hits[hit]
+            client.socket.emit(NetworkIds.SNAKE_HIT, hitInfo);
+            if(hitInfo.clientId === clientId){
+                client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
+                client.player.reportUpdate = true
+                //handlePlayerDisconnect(clientId, client)
+                client.player.dead = true
+                
+                //delete activeClients[clientId];
+            }
         }
     }
 
@@ -264,7 +298,13 @@ function updateClients(elapsedTime) {
     // when to put out the next update.
     lastUpdate = 0;
 }
+function handlePlayerDisconnect(clientId, client) {
+        client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
 
+        
+        delete activeClients[clientId];
+        //notifyDisconnect(clientId); // You need to implement notifyDisconnect function
+}
 //------------------------------------------------------------------
 //
 // Server side game loop

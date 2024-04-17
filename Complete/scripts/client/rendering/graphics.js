@@ -104,6 +104,29 @@ MyGame.graphics = (function() {
             localCenter.y - localSize.height / 2,
             localSize.width, localSize.height);
     }
+     // --------------------------------------------------------------
+    //
+    // Draws a texture to the canvas with the following specification:
+    //    image: Image
+    //    center: {x: , y: }
+    //    size: { width: , height: }
+    //
+    // --------------------------------------------------------------
+    function drawTexture(image, center, rotation, size) {
+        context.save();
+
+        context.translate(center.x, center.y);
+        context.rotate(rotation);
+        context.translate(-center.x, -center.y);
+
+        context.drawImage(
+            image,
+            center.x - size.x / 2,
+            center.y - size.y / 2,
+            size.x, size.y);
+
+        context.restore();
+    }
 
     //------------------------------------------------------------------
     //
@@ -124,6 +147,7 @@ MyGame.graphics = (function() {
         restoreContext: restoreContext,
         rotateCanvas: rotateCanvas,
         drawImage: drawImage,
+        drawTexture: drawTexture,
         drawImageSpriteSheet: drawImageSpriteSheet,
         drawCircle: drawCircle
     };

@@ -19,6 +19,7 @@ MyGame.components.Player = function() {
     let speed = 0;
     let segments = []; // Array to store segments
     let targetLocations = []
+    let dead = false
 
     Object.defineProperty(that, 'direction', {
         get: () => direction,
@@ -41,6 +42,11 @@ MyGame.components.Player = function() {
 
     Object.defineProperty(that, 'size', {
         get: () => size
+    });
+
+    Object.defineProperty(that, 'dead', {
+        get: () => dead,
+        set: value => {dead = value}
     });
 
     //------------------------------------------------------------------
@@ -68,6 +74,10 @@ MyGame.components.Player = function() {
     that.getSegments = function() {
         return segments;
     };
+
+    that.snakeHit = function(elapsedTime){
+        dead = true
+    }
 
     //------------------------------------------------------------------
     //

@@ -75,6 +75,14 @@
         'MISSILE_HIT': {
             value: 'missile-hit',
             writable: false
+        },
+        'SNAKE_HIT': {
+            value: 'snake-hit',
+            writable: false
+        },
+        'DEAD_SNAKE': {
+            value: 'dead-snake',
+            writable: false
         }
     });
 

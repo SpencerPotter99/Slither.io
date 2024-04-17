@@ -4,10 +4,16 @@
     <meta charset = "UTF-8">
     <title>Multiplayer - Complete</title>
     <script src = "/node_modules/socket.io/client-dist/socket.io.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id = "canvas-main" width = "1000" height = "1000" style = "background-color: rgba(22, 201, 186, 0.747)"></canvas>
+    <div class="lunar-div" id="main-game">
+        <div class ='new-game' id="new-game">
 
+        </div>
+        <canvas id = "canvas-main" width = "1000" height = "1000" style = "background-color: rgba(22, 201, 186, 0.747)"></canvas>
+    </div>
+    
     <script data-main = "scripts/client/loader" src = "scripts/client/require.js"></script>
 </body>
 </html>

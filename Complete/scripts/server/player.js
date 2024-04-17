@@ -24,7 +24,7 @@ function createPlayer() {
     let size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.15
+        radius: 0.10
     };
     let direction = random.nextDouble() * 2 * Math.PI; // Angle in radians
     let rotateRate = Math.PI / 1000; // radians per millisecond
@@ -32,6 +32,7 @@ function createPlayer() {
     let segments = []; // Array to store snake segments
     let reportUpdate = false; // Indicates if this model was updated during the last update
     let targetLocations = []
+    let dead = false
 
 
     
@@ -67,6 +68,12 @@ function createPlayer() {
 
     Object.defineProperty(that, 'radius', {
         get: () => size.radius
+    });
+
+
+    Object.defineProperty(that, 'dead', {
+        get: () => dead,
+        set: value => {dead = value}
     });
 
     //------------------------------------------------------------------
@@ -111,6 +118,11 @@ function createPlayer() {
         reportUpdate = true;
         direction = 0;
     };
+
+    that.snakeHit = function(elapsedTime){
+        reportUpdate = true;
+        dead = true
+    }
 
     that.rotateUp = function(elapsedTime) {
         reportUpdate = true;
@@ -200,7 +212,7 @@ function createSegment(playerPosition) {
     segment.size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.15
+        radius: 0.10
     };
     segment.speed = 0.0002; // Speed of the segment
     segment.targetsQueue = []
