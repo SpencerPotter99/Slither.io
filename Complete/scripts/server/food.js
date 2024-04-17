@@ -14,7 +14,7 @@ function create(spec) {
     let that = {};
 
     let radius = 0.0025;   
-    let timeRemaining = 1500;   // milliseconds
+    let timeRemaining = 15000000000;   // milliseconds
 
     Object.defineProperty(that, 'id', {
         get: () => spec.id

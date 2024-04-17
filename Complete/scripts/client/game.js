@@ -58,16 +58,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
         });
     });
 
-    socket.on(NetworkIds.food_NEW, data => {
+    socket.on(NetworkIds.FOOD_NEW, data => {
+       
         networkQueue.enqueue({
-            type: NetworkIds.food_NEW,
+            type: NetworkIds.FOOD_NEW,
             data: data
         });
     });
 
-    socket.on(NetworkIds.food_HIT, data => {
+    socket.on(NetworkIds.FOOD_HIT, data => {
         networkQueue.enqueue({
-            type: NetworkIds.food_HIT,
+            type: NetworkIds.FOOD_HIT,
             data: data
         });
     });
@@ -211,7 +212,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 y: data.position.y
             },
             timeRemaining: data.timeRemaining
+            
         });
+        console.log(foods)
     }
 
     //------------------------------------------------------------------
@@ -219,7 +222,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     // Handler for receiving notice that a food has hit a player.
     //
     //------------------------------------------------------------------
-    function foodHit(data) {
+    function foodHit(data, elapsedTime) {
         //replace with animation for eating food and adding a segment
         explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
@@ -229,6 +232,15 @@ MyGame.main = (function(graphics, renderer, input, components) {
             spriteCount: 16,
             spriteTime: [ 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
         });
+        let message = {
+            id: messageId++,
+            elapsedTime: elapsedTime,
+            type: NetworkIds.INPUT_ADD_SEGMENT
+        };
+        socket.emit(NetworkIds.INPUT, message);
+        messageHistory.enqueue(message);
+        playerSelf.model.addSegment();
+        console.log("added")
 
         //
         // When we receive a hit notification, go ahead and remove the
@@ -274,7 +286,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     foodNew(message.data);
                     break;
                 case NetworkIds.FOOD_HIT:
-                    foodHit(message.data);
+                    foodHit(message.data, elapsedTime);
                     break;
             }
         }
@@ -292,7 +304,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
 
         let removefoods = [];
+       
         for (let food in foods) {
+            
             if (!foods[food].update(elapsedTime)) {
                 removefoods.push(foods[food]);
             }
@@ -321,10 +335,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
             let player = playerOthers[id];
             renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
         }
-        console.log(foods)
+        
         for (let food in foods) {
-            
-            renderer.food.render(foods[food]);
+            renderer.Food.render(foods[food]);
         }
 
         for (let id in explosions) {
@@ -391,7 +404,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 socket.emit(NetworkIds.INPUT, message);
                 messageHistory.enqueue(message);
                 playerSelf.model.addSegment();
-                console.log("test")
+                
             },
             't', true);
 

@@ -13,7 +13,8 @@ MyGame.renderer.Food = (function(graphics) {
     //
     // ------------------------------------------------------------------
     that.render = function(model, texture) {
-        graphics.drawCircle(model.position, model.radius, '#FFFFFF');
+        graphics.drawCircle(model.position, model.radius, '#000000');
+        console.log("rendering")
     };
 
     return that;

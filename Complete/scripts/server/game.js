@@ -37,7 +37,8 @@ function createFood(position) {
     });
     newFoods.push(food);
     
-}
+    
+}  
 
 //------------------------------------------------------------------
 //
@@ -67,7 +68,6 @@ function processInput(elapsedTime) {
                 client.player.rotateRight(input.message.elapsedTime);
                 break;
             case NetworkIds.INPUT_ADD_SEGMENT:
-                
                 client.player.addSegment();
                 break;
         }
@@ -214,6 +214,7 @@ function updateClients(elapsedTime) {
         //
         // Report any new missiles to the active clients
         for (let food = 0; food < foodMessages.length; food++) {
+            
             client.socket.emit(NetworkIds.FOOD_NEW, foodMessages[food]);
         }
 
