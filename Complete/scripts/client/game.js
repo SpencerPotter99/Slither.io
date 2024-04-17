@@ -5,7 +5,7 @@
 //------------------------------------------------------------------
 MyGame.main = (function(graphics, renderer, input, components) {
     'use strict';
-
+    let playerName = ""
     let lastTimeStamp = performance.now(),
         myKeyboard = input.Keyboard(),
         playerSelf = {
@@ -29,12 +29,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
             lifetime: { mean: 2, stdev: 1 }
         },
         graphics);
-
-        let renderFire = renderer.ParticleSystem(particlesFire, graphics, MyGame.assets['particle-fire'])
     
     socket.on(NetworkIds.CONNECT_ACK, data => {
         networkQueue.enqueue({
             type: NetworkIds.CONNECT_ACK,
+            data: data
+        });
+    });
+
+    socket.on(NetworkIds.CONNECT_SNAKE, data => {
+        networkQueue.enqueue({
+            type: NetworkIds.CONNECT_SNAKE,
             data: data
         });
     });
@@ -49,6 +54,13 @@ MyGame.main = (function(graphics, renderer, input, components) {
     socket.on(NetworkIds.DISCONNECT_OTHER, data => {
         networkQueue.enqueue({
             type: NetworkIds.DISCONNECT_OTHER,
+            data: data
+        });
+    });
+
+    socket.on(NetworkIds.TUTORIAL_START, data => {
+        networkQueue.enqueue({
+            type: NetworkIds.TUTORIAL_START,
             data: data
         });
     });
@@ -103,7 +115,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function connectPlayerSelf(data) {
-
+        console.log(data)
+        playerSelf.model.playerName = data.playerName
         playerSelf.model.position.x = data.position.x;
         playerSelf.model.position.y = data.position.y;
 
@@ -119,12 +132,23 @@ MyGame.main = (function(graphics, renderer, input, components) {
 
     //------------------------------------------------------------------
     //
+    // Handler for when the server ack's the socket connection.  We receive
+    // the state of the newly connected player model.
+    //
+    //------------------------------------------------------------------
+    function connectPreName(data) {
+        getName()
+    }
+
+    //------------------------------------------------------------------
+    //
     // Handler for when a new player connects to the game.  We receive
     // the state of the newly connected player model.
     //
     //------------------------------------------------------------------
     function connectPlayerOther(data) {
         let model = components.PlayerRemote();
+        model.state.playerName = data.playerName
         model.state.position.x = data.position.x;
         model.state.position.y = data.position.y;
         model.state.direction = data.direction;
@@ -146,6 +170,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             texture: MyGame.assets['player-other'],
             segmentTexure: MyGame.assets['player-segment-other']
         };
+        console.log("connected other")
     }
 
     //------------------------------------------------------------------
@@ -248,7 +273,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
             timeRemaining: data.timeRemaining
             
         });
-        console.log(foods)
     }
 
     //------------------------------------------------------------------
@@ -284,6 +308,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function snakeHit(data) {
+        console.log(data.position)
         explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
             spriteSheet: MyGame.assets['explosion'],
@@ -298,18 +323,97 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // associated missle from the client model.
         //delete missiles[data.missileId];
         particles[nextExplosionId] = components.ParticleSystem({
-            center: { x: data.position?.x, y: data.position.y },
-            size: { mean: 10, stdev: 4 },
-            speed: { mean: 50, stdev: 25 },
-            lifetime: { mean: 4, stdev: 1 }
+            center: { x: data.position.x, y: data.position.y },
+            size: { mean: .05, stdev: .05 },
+            speed: { mean: .005, stdev: .05 },
+            lifetime: { mean: 4, stdev: 1 },
+            totalParticles: 20
         },
         graphics);
 
     }
 
-    function dead(data) {
+    function getName() {
         let winGameContainer = document.getElementById('new-game');
         winGameContainer.innerHTML = '';
+        
+        // Create a heading element
+        let winGameText = document.createElement('h2');
+        winGameText.textContent = "Please Enter the name of your Train";
+        
+        // Create a text input element
+        let nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Enter name...';
+        
+        // Create a button element
+        let saveNameButton = document.createElement('button');
+        saveNameButton.textContent = "Save Name";
+        
+        // Add click event listener to the button
+        saveNameButton.addEventListener('click', function() {
+            console.log("TEST")
+            playerName = nameInput.value
+            let message = {
+                id: messageId++,
+                type: NetworkIds.SNAKE_NAME,
+                playerName: playerName
+            };
+            socket.emit(NetworkIds.SNAKE_NAME, message);
+            winGameContainer.innerHTML = ""
+            winGameContainer.style.visibility = 'hidden';
+        });
+        
+        // Style the container
+        winGameContainer.style.backgroundColor = "rgba(0, 217, 255, 0.5)";
+        winGameContainer.style.border = "1px solid rgba(0, 204, 255, 0.5)";
+        winGameContainer.style.backdropFilter = "blur(10px)";
+        winGameContainer.style.boxShadow = "0 1px 12px rgba(0,0,0,0.25)";
+        
+        // Append elements to the container
+        winGameContainer.appendChild(winGameText);
+        winGameContainer.appendChild(nameInput);
+        winGameContainer.appendChild(saveNameButton);
+    }
+
+    function showTutorial() {
+        
+        let winGameContainer = document.getElementById('new-game');
+        winGameContainer.style.visibility = 'visible';
+        winGameContainer.innerHTML = '';
+        
+        // Create a heading element
+        let winGameText = document.createElement('h2');
+        winGameText.textContent = "The Snake Will Change Direction based on Keypress";
+        
+        
+        function delayedFunction() {
+            console.log("TEST");
+            let message = {
+                id: messageId++,
+                type: NetworkIds.TUTORIAL_DONE,
+            };
+            socket.emit(NetworkIds.TUTORIAL_DONE, message);
+            winGameContainer.innerHTML = "";
+            winGameContainer.style.visibility = 'hidden';
+        }
+        
+        // Style the container
+        winGameContainer.style.backgroundColor = "rgba(0, 217, 255, 0.5)";
+        winGameContainer.style.border = "1px solid rgba(0, 204, 255, 0.5)";
+        winGameContainer.style.backdropFilter = "blur(10px)";
+        winGameContainer.style.boxShadow = "0 1px 12px rgba(0,0,0,0.25)";
+        
+        // Append elements to the container
+        winGameContainer.appendChild(winGameText);
+        setTimeout(delayedFunction, 3000);
+    }
+
+    function dead(data) {
+        
+        let winGameContainer = document.getElementById('new-game');
+        winGameContainer.innerHTML = '';
+        winGameContainer.style.visibility = 'visible';
         
         // Create a heading element
         let winGameText = document.createElement('h2');
@@ -357,7 +461,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
             let message = processMe.dequeue();
             switch (message.type) {
                 case NetworkIds.CONNECT_ACK:
-                    connectPlayerSelf(message.data);
+                    connectPreName(message.data);
+                    break;
+                case NetworkIds.TUTORIAL_START:
+                    showTutorial();
                     break;
                 case NetworkIds.CONNECT_OTHER:
                     connectPlayerOther(message.data);
@@ -382,6 +489,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     break;
                 case NetworkIds.DEAD_SNAKE:
                     dead(message.data);
+                    break;
+                case NetworkIds.CONNECT_SNAKE:
+                    connectPlayerSelf(message.data);
                     break;
             }
         }
@@ -413,10 +523,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
 
         for (let id in explosions) {
             //particlesFire.update(elapsedTime)
+  
             if (!explosions[id].update(elapsedTime)) {
-                //particles[id].update(elapsedTime)
+                
+                
                 delete explosions[id];
+                //delete particles[id]
             }
+        }
+
+        for(let id in particles){
+            particles[id].update(elapsedTime)
         }
     }
 
@@ -427,7 +544,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function render() {
         graphics.clear();
-        if(!playerSelf.model.dead){
+        if(!playerSelf.model.dead && playerSelf.model.playerName){
             renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
         }
         for (let id in playerOthers) {
@@ -443,9 +560,13 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
 
         for (let id in explosions) {
+            
             renderer.AnimatedSprite.render(explosions[id]);
-            //renderer.ParticleSystem(particles[id], graphics, MyGame.assets['particle-fire'])
+            
             //renderFire.render()
+        }
+        for (let id in particles){
+            renderer.ParticleSystem.render(particles[id], graphics, MyGame.assets['particle-fire'])
         }
     }
 

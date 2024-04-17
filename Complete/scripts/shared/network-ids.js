@@ -53,6 +53,18 @@
             value: 'connect-other',
             writable: false
         },
+        'CONNECT_SNAKE': {
+            value: 'connect-snake',
+            writable: false
+        },
+        'TUTORIAL_START': {
+            value: 'tutorial-start',
+            writable: false
+        },
+        'TUTORIAL_DONE': {
+            value: 'tutorial-done',
+            writable: false
+        },
         'DISCONNECT_OTHER': {
             value: 'disconnect-other',
             writable: false
@@ -77,6 +89,10 @@
             value: 'snake-hit',
             writable: false
         },
+        'SNAKE_NAME': {
+            value: 'snake-name',
+            writable: false
+        },  
         'DEAD_SNAKE': {
             value: 'dead-snake',
             writable: false

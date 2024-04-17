@@ -83,6 +83,9 @@ function processInput(elapsedTime) {
             case NetworkIds.INPUT_ADD_SEGMENT:
                 client.player.addSegment();
                 break;
+            case NetworkIds.CONNECT_SNAKE:
+                client.player.updatePlayerName(input.message.playerName);
+                break;
         }
     }
 }
@@ -406,35 +409,64 @@ function initializeSocketIO(httpServer) {
         console.log('Connection established: ', socket.id);
         //
         // Create an entry in our list of connected clients
-        let newPlayer = Player.create()
-        newPlayer.clientId = socket.id;
-        activeClients[socket.id] = {
-            socket: socket,
-            player: newPlayer
-        };
-        newPlayer.addSegment();
+        
         socket.emit(NetworkIds.CONNECT_ACK, {
-            direction: newPlayer.direction,
-            position: newPlayer.position,
-            size: newPlayer.size,
-            rotateRate: newPlayer.rotateRate,
-            speed: newPlayer.speed,
-            segments: newPlayer.getSegments(),
+
         });
 
-        socket.on(NetworkIds.INPUT, data => {
-            inputQueue.enqueue({
-                clientId: socket.id,
-                message: data
+        socket.on(NetworkIds.SNAKE_NAME, data => {
+            socket.emit(NetworkIds.TUTORIAL_START, {
+
             });
+
+            socket.on(NetworkIds.TUTORIAL_DONE, dataTUT => {
+                inputQueue.enqueue({
+                    clientId: socket.id,
+                    message: data
+                });
+                let newPlayer
+                console.log("TEST")
+                
+                inputQueue.enqueue({
+                    clientId: socket.id,
+                    message: data
+                });
+                newPlayer = Player.create(data.playerName)
+                newPlayer.clientId = socket.id;
+                activeClients[socket.id] = {
+                    socket: socket,
+                    player: newPlayer
+                };
+                newPlayer.addSegment();
+                console.log(data.playerName)
+                socket.emit(NetworkIds.CONNECT_SNAKE, {
+                    playerName: data.playerName,
+                    direction: newPlayer.direction,
+                    position: newPlayer.position,
+                    size: newPlayer.size,
+                    rotateRate: newPlayer.rotateRate,
+                    speed: newPlayer.speed,
+                    segments: newPlayer.getSegments(),
+                },
+                notifyConnect(socket, newPlayer));
+                socket.on(NetworkIds.INPUT, data => {
+                    inputQueue.enqueue({
+                        clientId: socket.id,
+                        message: data
+                    });
+                });
+            }); 
+            
         });
+
+
 
         socket.on('disconnect', function() {
             delete activeClients[socket.id];
             notifyDisconnect(socket.id);
         });
 
-        notifyConnect(socket, newPlayer);
+        
     });
 }
 

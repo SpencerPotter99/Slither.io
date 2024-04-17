@@ -13,7 +13,7 @@ let random = require('./random');
 // at some random location.
 //
 //------------------------------------------------------------------
-function createPlayer() {
+function createPlayer(name) {
     let that = {};
 
     let position = {
@@ -33,6 +33,7 @@ function createPlayer() {
     let reportUpdate = false; // Indicates if this model was updated during the last update
     let targetLocations = []
     let dead = false
+    let playerName = name
 
 
     
@@ -43,6 +44,10 @@ function createPlayer() {
 
     Object.defineProperty(that, 'position', {
         get: () => position
+    });
+
+    Object.defineProperty(that, 'playerName', {
+        get: () => playerName
     });
 
     Object.defineProperty(that, 'size', {
@@ -131,6 +136,13 @@ function createPlayer() {
     that.rotateSouthEast = function(elapsedTime) {
         reportUpdate = true;
         direction = 0.785398
+    };
+
+    that.updatePlayerName = function(name) {
+        console.log("TEST 3")
+        console.log(name)
+        reportUpdate = true;
+        playerName = name
     };
 
     //------------------------------------------------------------------

@@ -118,10 +118,12 @@ MyGame.components.ParticleSystem = function(spec) {
 
         //
         // Generate some new particles
-        for (let particle = 0; particle < 1; particle++) {
-            //
-            // Assign a unique name to each particle
-            particles[nextName++] = create();
+        if(nextName < spec.totalParticles){
+            for (let particle = 0; particle < 1; particle++) {
+                //
+                // Assign a unique name to each particle
+                particles[nextName++] = create();
+            }
         }
     }
 

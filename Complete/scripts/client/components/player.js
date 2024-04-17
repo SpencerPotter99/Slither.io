@@ -20,6 +20,7 @@ MyGame.components.Player = function() {
     let segments = []; // Array to store segments
     let targetLocations = []
     let dead = false
+    let playerName = ''
 
     Object.defineProperty(that, 'direction', {
         get: () => direction,
@@ -38,6 +39,11 @@ MyGame.components.Player = function() {
 
     Object.defineProperty(that, 'position', {
         get: () => position
+    });
+
+    Object.defineProperty(that, 'playerName', {
+        get: () => playerName,
+        set: value => {playerName = value}
     });
 
     Object.defineProperty(that, 'size', {
