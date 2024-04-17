@@ -307,6 +307,7 @@ function updateClients(elapsedTime) {
     //
     // Don't need these anymore, clean up
     hits.length = 0;
+    segmentHits.length = 0;
     //
     // Reset the elapsed time since last update so we can know
     // when to put out the next update.
