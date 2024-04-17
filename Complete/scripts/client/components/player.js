@@ -19,6 +19,7 @@ MyGame.components.Player = function() {
     let speed = 0;
     let segments = []; // Array to store segments
     let targetLocations = []
+    let dead = false
 
     Object.defineProperty(that, 'direction', {
         get: () => direction,
@@ -41,6 +42,11 @@ MyGame.components.Player = function() {
 
     Object.defineProperty(that, 'size', {
         get: () => size
+    });
+
+    Object.defineProperty(that, 'dead', {
+        get: () => dead,
+        set: value => {dead = value}
     });
 
     //------------------------------------------------------------------
@@ -68,6 +74,10 @@ MyGame.components.Player = function() {
     that.getSegments = function() {
         return segments;
     };
+
+    that.snakeHit = function(elapsedTime){
+        dead = true
+    }
 
     //------------------------------------------------------------------
     //
@@ -106,7 +116,18 @@ MyGame.components.Player = function() {
     //
     //------------------------------------------------------------------
     that.rotateRight = function(elapsedTime) {
-        direction += (rotateRate * elapsedTime);
+        direction = 0;
+    };
+
+    that.rotateUp = function(elapsedTime) {
+        direction = 4.71239
+    };
+    that.rotateSouthEast = function(elapsedTime) {
+        direction = 0.785398
+    };
+    that.rotateDown = function(elapsedTime) {
+        
+        direction =1.5708
     };
 
     //------------------------------------------------------------------
@@ -115,7 +136,7 @@ MyGame.components.Player = function() {
     //
     //------------------------------------------------------------------
     that.rotateLeft = function(elapsedTime) {
-        direction -= (rotateRate * elapsedTime);
+        direction = 3.14159;
     };
 
     //------------------------------------------------------------------
@@ -125,7 +146,6 @@ MyGame.components.Player = function() {
     //------------------------------------------------------------------
     that.update = function(elapsedTime) {
         if(direction>6.283 || direction < -6.283){
-            console.log("TEST")
             direction = 0
         }
         // Update segment behaviors if needed
@@ -152,6 +172,7 @@ MyGame.components.Player = function() {
             height: 0.15,
             radius: 0.15
         };
+        segment.targetsQueue = []
 
         //------------------------------------------------------------------
         //
@@ -159,8 +180,8 @@ MyGame.components.Player = function() {
         //
         //------------------------------------------------------------------
         segment.move = function(vectorX, vectorY, elapsedTime) {
-            if (targetsQueue.length > 0) {
-                let target = targetsQueue[0];
+            if (segment.targetsQueue.length > 0) {
+                let target = segment.targetsQueue[0];
                 let deltaX = target.x - segment.position.x;
                 let deltaY = target.y - segment.position.y;
                 let distanceToTarget = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -173,7 +194,7 @@ MyGame.components.Player = function() {
                 // Check if the segment has reached the target
                 if (distanceToTarget < 0.1) {
                     // Remove the reached target from the queue
-                    targetsQueue.shift();
+                    segment.targetsQueue.shift();
                 }
             }
         };
@@ -185,6 +206,10 @@ MyGame.components.Player = function() {
         //------------------------------------------------------------------
         segment.update = function(elapsedTime) {
             // Update segment's behavior if needed
+        };
+
+        segment.addTarget = function(newTarget) {
+            segment.targetsQueue.push(newTarget);
         };
 
         return segment;

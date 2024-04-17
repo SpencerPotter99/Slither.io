@@ -1,0 +1,89 @@
+html, body {
+    overflow: hidden;
+}
+
+.menu {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+.menu h1 {
+    padding: 10px 20px;
+    border-radius: 8px;
+    backdrop-filter:  blur(20px);
+    background-color: rgba(0, 217, 255, 0.6);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.25);
+    border:  1px solid rgba(0,204,255, 0.6);
+}
+
+.menu li {
+    padding: 10px 20px;
+    border-radius: 8px;
+    backdrop-filter:  blur(20px);
+    background-color: rgba(0, 217, 255, 0.6);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.25);
+    border:  1px solid rgba(0,204,255, 0.6);
+}
+
+.buttons {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    width: 250px; /* Set a fixed width */
+    height: 100px; /* Set a fixed height */
+    cursor: pointer;
+    border-radius: 8px;
+    backdrop-filter:  blur(20px);
+    background-color: rgba(0, 217, 255, 0.6);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.25);
+    border:  1px solid rgba(0,204,255, 0.6);
+}
+.buttons h4 {
+    margin: 0;
+    text-align: center; /* Align text to the center */
+    
+}
+
+.lunar-div {
+    position: relative; /* Ensure .new-game is positioned relative to this */
+    width: 100%; /* Ensure it spans the width of the parent */
+    height: 100vh; /* Set height of parent container to viewport height */
+}
+
+.lunar-info {
+    position: absolute;
+    top: 0;
+    right: 0; /* Position at the top right corner */
+    justify-content: flex-end; /* Align content to the end (right side) */
+    padding: 10px;
+    text-align: center;
+    width: 250px;
+    border-radius: 8px;
+    backdrop-filter:  blur(20px);
+    background-color: rgba(0, 0, 255, 0.6);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.25);
+    border:  1px solid rgba(0,0,255, 0.6);
+}
+
+.lunar-info {
+    position: absolute;
+    top: 0;
+    right: 0; /* Position at the top right corner */
+    justify-content: flex-end; /* Align content to the end (right side) */
+    padding: 10px;
+
+}
+
+.new-game {
+    position: absolute; /* Position the div absolutely */
+    top: 50%; /* Move the div 50% down from the top of its containing block */
+    left: 50%; /* Move the div 50% across from the left of its containing block */
+    transform: translate(-50%, -50%); /* Center the div both vertically and horizontally */
+    padding: 10px;
+    text-align: center;
+    width: 250px;
+    border-radius: 8px;
+
+}

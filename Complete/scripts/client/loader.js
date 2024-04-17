@@ -30,7 +30,7 @@ MyGame.loader = (function() {
             message: 'Input loaded',
             onComplete: null
         }, {
-            scripts: ['components/player', 'components/player-remote', 'components/food', 'components/animated-sprite'],
+            scripts: ['components/player', 'components/player-remote', 'components/missile', 'components/animated-sprite', 'components/particleSystem'],
             message: 'Player models loaded',
             onComplete: null
         }, {
@@ -38,7 +38,7 @@ MyGame.loader = (function() {
             message: 'Graphics loaded',
             onComplete: null
         }, {
-            scripts: ['rendering/player', 'rendering/player-remote', 'rendering/food', 'rendering/animated-sprite'],
+            scripts: ['rendering/player', 'rendering/player-remote', 'rendering/missile', 'rendering/animated-sprite', 'rendering/renderParticles'],
             message: 'Renderers loaded',
             onComplete: null
         }, {
@@ -58,6 +58,9 @@ MyGame.loader = (function() {
         }, {
             key: 'player-segment-other',
             source: 'assets/EvilLogs.png'
+        },{
+            key: 'particle-fire',
+            source: 'assets/fire.png'
         },{
             key: 'explosion',
             source: 'assets/explosion.png'

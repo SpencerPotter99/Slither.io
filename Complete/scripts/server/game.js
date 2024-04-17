@@ -19,6 +19,7 @@ let activeClients = {};
 let newFoods = [];
 let activeFood = [];
 let hits = [];
+let segmentHits = []
 let inputQueue = Queue.create();
 let nextFoodId = 1;
 
@@ -67,6 +68,18 @@ function processInput(elapsedTime) {
             case NetworkIds.INPUT_ROTATE_RIGHT:
                 client.player.rotateRight(input.message.elapsedTime);
                 break;
+            case NetworkIds.INPUT_ROTATE_SOUTH_EAST:
+                client.player.rotateSouthEast(input.message.elapsedTime);
+                break;
+            case NetworkIds.INPUT_ROTATE_UP:
+                client.player.rotateUp(input.message.elapsedTime);
+                break;
+            case NetworkIds.INPUT_ROTATE_DOWN:
+                client.player.rotateDown(input.message.elapsedTime);
+                break;
+            case NetworkIds.INPUT_FIRE:
+                createMissile(input.clientId, client.player);
+                break;
             case NetworkIds.INPUT_ADD_SEGMENT:
                 client.player.addSegment();
                 break;
@@ -94,8 +107,56 @@ function collided(obj1, obj2) {
 //------------------------------------------------------------------
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
-        activeClients[clientId].player.move(elapsedTime)
-        activeClients[clientId].player.update(currentTime);
+
+        if( !activeClients[clientId].player.dead){
+            activeClients[clientId].player.update(currentTime);
+            activeClients[clientId].player.move(elapsedTime)
+            for (let otherClientId in activeClients){
+                if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead){
+                    if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
+                        console.log("HIT")
+                        //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
+                        //you need to mess around with the radius
+                        segmentHits.push({
+                            position: activeClients[clientId].player.position,
+                            clientId: clientId
+                        })
+                        for (let i = 0; i < activeClients[clientId].player.segments.length; i++){
+                            segmentHits.push({
+                                position: activeClients[clientId].player.segments[i].position,
+                                clientId: clientId
+                            })
+                        }
+                    }
+
+                    for(let i = 0; i < activeClients[otherClientId].player.segments.length; i++){
+                        let obj1 = { position:{
+                            x:activeClients[otherClientId].player.segments[i].position.x, 
+                            y: activeClients[otherClientId].player.segments[i].position.y,
+                            },
+                            radius: activeClients[otherClientId].player.segments[i].size.radius
+                        }
+                        if (collided(obj1, activeClients[clientId].player)) {
+                            console.log("HIT segment")
+                           segmentHits.push({
+                                position: activeClients[clientId].player.position,
+                                clientId: clientId
+                            })
+                            for (let j = 0; j < activeClients[clientId].player.segments.length; j++){
+                                segmentHits.push({
+                                    position: activeClients[clientId].player.segments[j].position,
+                                    clientId: clientId
+                                })
+                            }
+
+                        }
+                        
+                    }
+                }
+            }
+        }else{
+            activeClients[clientId].player.snakeHit(currentTime)
+        }
     }
 
     for (let food = 0; food < newFoods.length; food++) {
@@ -196,6 +257,7 @@ function updateClients(elapsedTime) {
             direction: client.player.direction,
             position: client.player.position,
             segments: client.player.segments,
+            dead: client.player.dead,
             updateWindow: lastUpdate
         };
         if (client.player.reportUpdate) {
@@ -217,6 +279,19 @@ function updateClients(elapsedTime) {
             
             client.socket.emit(NetworkIds.FOOD_NEW, foodMessages[food]);
         }
+      
+      for (let hit = 0; hit < segmentHits.length; hit++) {
+            let hitInfo = segmentHits[hit]
+            client.socket.emit(NetworkIds.SNAKE_HIT, hitInfo);
+            if(hitInfo.clientId === clientId){
+                client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
+                client.player.reportUpdate = true
+                //handlePlayerDisconnect(clientId, client)
+                client.player.dead = true
+                
+                //delete activeClients[clientId];
+            }
+        }
 
         //
         // Report any food hits to this client
@@ -237,7 +312,13 @@ function updateClients(elapsedTime) {
     // when to put out the next update.
     lastUpdate = 0;
 }
+function handlePlayerDisconnect(clientId, client) {
+        client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
 
+        
+        delete activeClients[clientId];
+        //notifyDisconnect(clientId); // You need to implement notifyDisconnect function
+}
 //------------------------------------------------------------------
 //
 // Server side game loop
