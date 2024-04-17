@@ -258,7 +258,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function foodHit(data, elapsedTime) {
         //replace with animation for eating food and adding a segment
-        explosions[nextExplosionId] = components.AnimatedSprite({
+        /*explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
             spriteSheet: MyGame.assets['explosion'],
             spriteSize: { width: 0.07, height: 0.07 },
@@ -266,6 +266,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             spriteCount: 16,
             spriteTime: [ 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250]
         });
+        */
         let message = {
             id: messageId++,
             elapsedTime: elapsedTime,
