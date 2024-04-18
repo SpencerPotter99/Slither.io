@@ -34,6 +34,7 @@ function createPlayer(name) {
     let targetLocations = []
     let dead = false
     let playerName = name
+    let invincibility = 100
 
 
     
@@ -64,6 +65,10 @@ function createPlayer(name) {
 
     Object.defineProperty(that, 'segments', {
         get: () => segments
+    });
+
+    Object.defineProperty(that, 'invincibility', {
+        get: () => invincibility
     });
 
     Object.defineProperty(that, 'reportUpdate', {
@@ -167,6 +172,9 @@ function createPlayer(name) {
     //
     //------------------------------------------------------------------
     that.update = function(when) {
+        if(invincibility>0){
+            invincibility--
+        }
         if(direction>6.283 || direction < -6.283){
             direction = 0
         }

@@ -115,7 +115,7 @@ function update(elapsedTime, currentTime) {
             activeClients[clientId].player.update(currentTime);
             activeClients[clientId].player.move(elapsedTime)
             for (let otherClientId in activeClients){
-                if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead){
+                if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead && activeClients[otherClientId].player.invincibility <= 0 && activeClients[clientId].player.invincibility<=0 ){
                     if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
                         console.log("HIT")
                         //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
