@@ -16,6 +16,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerOthers = {},
         foods = {},
         explosions = {},
+        AnimatedFoods = {},
         messageHistory = Queue.create(),
         messageId = 1,
         nextExplosionId = 1,
@@ -238,6 +239,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function foodNew(data) {
+        console.log("revieving Food" + data)
         foods[data.id] = components.Food({
             id: data.id,
             radius: data.radius,
@@ -248,7 +250,16 @@ MyGame.main = (function(graphics, renderer, input, components) {
             timeRemaining: data.timeRemaining
             
         });
-        console.log(foods)
+        AnimatedFoods[data.id] = components.AnimatedSprite({
+            id: data.id,
+            spriteSheet: MyGame.assets['SpinnyYellow'],
+            spriteSize: {width: 0.03, height: 0.03},
+            spriteCenter: data.position,
+            spriteCount: 4,
+            spriteTime: [300,300,300,300]
+        })
+
+        
     }
 
     //------------------------------------------------------------------
@@ -275,8 +286,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         socket.emit(NetworkIds.INPUT, message);
         messageHistory.enqueue(message);
         playerSelf.model.addSegment();
-        console.log("added")
-
+        
         //
         // When we receive a hit notification, go ahead and remove the
         // associated missle from the client model.
@@ -410,6 +420,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         for (let food = 0; food < removefoods.length; food++) {
             delete foods[removefoods[food].id];
         }
+        for (let id in AnimatedFoods){
+            AnimatedFoods[id].update(elapsedTime);
+        }
 
         for (let id in explosions) {
             //particlesFire.update(elapsedTime)
@@ -439,7 +452,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
         
         for (let food in foods) {
-            renderer.Food.render(foods[food]);
+            
+            
+            renderer.AnimatedSprite.render(AnimatedFoods[food])
         }
 
         for (let id in explosions) {

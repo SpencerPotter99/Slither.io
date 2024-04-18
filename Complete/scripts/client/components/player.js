@@ -163,7 +163,7 @@ MyGame.components.Player = function() {
     function createSegment(playerPosition) {
         let segment = {};
 
-        segment.position = {x: playerPosition.x-.15,
+        segment.position = {x: playerPosition.x,
             y: playerPosition.y}; // Position of the segment
         segment.direction = 0; // Direction of the segment
         segment.speed = 0.0002; // Speed of the segment
