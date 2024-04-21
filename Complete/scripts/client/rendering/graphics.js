@@ -104,6 +104,18 @@ MyGame.graphics = (function() {
             localCenter.y - localSize.height / 2,
             localSize.width, localSize.height);
     }
+
+    function drawText(text, positionX, positionY, font, color) {
+        let localCenter = {
+            x: positionX * canvas.width,
+            y: positionY * canvas.width
+        };
+
+        console.log(localCenter)
+        context.font = font; // Set the font style and size
+        context.fillStyle = color;
+        context.fillText(text, localCenter.x- 40, localCenter.y - 40); // Draw the text at the specified position
+    };
      // --------------------------------------------------------------
     //
     // Draws a texture to the canvas with the following specification:
@@ -151,6 +163,7 @@ MyGame.graphics = (function() {
 
     return {
         clear: clear,
+        drawText: drawText,
         saveContext: saveContext,
         restoreContext: restoreContext,
         rotateCanvas: rotateCanvas,

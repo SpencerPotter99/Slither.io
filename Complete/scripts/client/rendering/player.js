@@ -14,9 +14,6 @@ MyGame.renderer.Player = (function(graphics) {
     // ------------------------------------------------------------------
     that.render = function(model, texture, segmentTexure) {
         graphics.saveContext();
-        graphics.rotateCanvas(model.position, model.direction);
-        graphics.drawImage(texture, model.position, model.size);
-        graphics.restoreContext();
         let segments = model.segments
         for (let i = 0; i < segments?.length; i++) {
             graphics.saveContext();
@@ -25,7 +22,16 @@ MyGame.renderer.Player = (function(graphics) {
             graphics.restoreContext();
         }
         graphics.restoreContext();
+        graphics.saveContext();
+        graphics.rotateCanvas(model.position, model.direction);
+        graphics.drawImage(texture, model.position, model.size)
+        graphics.restoreContext();
+        graphics.saveContext();
+        graphics.rotateCanvas(model.position, model.direction);
+        graphics.drawText(model.playerName, model.position.x, model.position.y, "25px Arial", "#0000ff")
+        graphics.restoreContext();
     };
+    
 
     return that;
 

@@ -27,6 +27,7 @@ MyGame.components.PlayerRemote = function() {
         segments:[],
         updateWindow: 0      // Server reported time elapsed since last update
     };
+    let name = ""
 
     Object.defineProperty(that, 'state', {
         get: () => state

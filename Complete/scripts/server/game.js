@@ -260,6 +260,7 @@ function updateClients(elapsedTime) {
             direction: client.player.direction,
             position: client.player.position,
             segments: client.player.segments,
+            name: client.player.playerName,
             dead: client.player.dead,
             updateWindow: lastUpdate
         };
@@ -316,13 +317,7 @@ function updateClients(elapsedTime) {
     // when to put out the next update.
     lastUpdate = 0;
 }
-function handlePlayerDisconnect(clientId, client) {
-        client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
 
-        
-        delete activeClients[clientId];
-        //notifyDisconnect(clientId); // You need to implement notifyDisconnect function
-}
 //------------------------------------------------------------------
 //
 // Server side game loop
@@ -357,7 +352,7 @@ function initializeSocketIO(httpServer) {
     // other players already connected.
     //
     //------------------------------------------------------------------
-    function notifyConnect(socket, newPlayer) {
+    function notifyConnect(socket, newPlayer, name) {
         for (let clientId in activeClients) {
             let client = activeClients[clientId];
             if (newPlayer.clientId !== clientId) {
@@ -370,6 +365,7 @@ function initializeSocketIO(httpServer) {
                     rotateRate: newPlayer.rotateRate,
                     speed: newPlayer.speed,
                     size: newPlayer.size,
+                    name: name,
                     segments: newPlayer.getSegments(),
                 });
 
@@ -399,10 +395,12 @@ function initializeSocketIO(httpServer) {
             let client = activeClients[clientId];
             if (playerId !== clientId) {
                 client.socket.emit(NetworkIds.DISCONNECT_OTHER, {
-                    clientId: playerId
+                    clientId: playerId,
+                    name: activeClients[playerId]?.player?.playerName
                 });
             }
         }
+        delete activeClients[playerId];
     }
     
     io.on('connection', function(socket) {
@@ -425,20 +423,20 @@ function initializeSocketIO(httpServer) {
                     message: data
                 });
                 let newPlayer
-                console.log("TEST")
                 
                 inputQueue.enqueue({
                     clientId: socket.id,
                     message: data
                 });
                 newPlayer = Player.create(data.playerName)
+                newPlayer.updatePlayerName(data.playerName)
+                console.log(newPlayer.playerName)
                 newPlayer.clientId = socket.id;
                 activeClients[socket.id] = {
                     socket: socket,
                     player: newPlayer
                 };
                 newPlayer.addSegment();
-                console.log(data.playerName)
                 socket.emit(NetworkIds.CONNECT_SNAKE, {
                     playerName: data.playerName,
                     direction: newPlayer.direction,
@@ -448,7 +446,7 @@ function initializeSocketIO(httpServer) {
                     speed: newPlayer.speed,
                     segments: newPlayer.getSegments(),
                 },
-                notifyConnect(socket, newPlayer));
+                notifyConnect(socket, newPlayer, data.playerName));
                 socket.on(NetworkIds.INPUT, data => {
                     inputQueue.enqueue({
                         clientId: socket.id,
@@ -462,7 +460,6 @@ function initializeSocketIO(httpServer) {
 
 
         socket.on('disconnect', function() {
-            delete activeClients[socket.id];
             notifyDisconnect(socket.id);
         });
 

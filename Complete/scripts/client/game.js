@@ -6,6 +6,7 @@
 MyGame.main = (function(graphics, renderer, input, components) {
     'use strict';
     let playerName = ""
+    let currentScores = {}
     let lastTimeStamp = performance.now(),
         myKeyboard = input.Keyboard(),
         playerSelf = {
@@ -115,7 +116,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function connectPlayerSelf(data) {
-        console.log(data)
         playerSelf.model.playerName = data.playerName
         playerSelf.model.position.x = data.position.x;
         playerSelf.model.position.y = data.position.y;
@@ -148,7 +148,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function connectPlayerOther(data) {
         let model = components.PlayerRemote();
-        model.state.playerName = data.playerName
+        model.state.playerName = data.name
         model.state.position.x = data.position.x;
         model.state.position.y = data.position.y;
         model.state.direction = data.direction;
@@ -179,6 +179,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function disconnectPlayerOther(data) {
+        delete currentScores[data.name]
         delete playerOthers[data.clientId];
     }
 
@@ -248,6 +249,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     function updatePlayerOther(data) {
         if (playerOthers.hasOwnProperty(data.clientId)) {
             let model = playerOthers[data.clientId].model;
+            model.state.playerName = data.name
             model.goal.updateWindow = data.updateWindow;
             model.goal.dead = data.dead
             model.goal.segments = data.segments
@@ -308,7 +310,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function snakeHit(data) {
-        console.log(data.position)
         explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
             spriteSheet: MyGame.assets['explosion'],
@@ -352,16 +353,21 @@ MyGame.main = (function(graphics, renderer, input, components) {
         
         // Add click event listener to the button
         saveNameButton.addEventListener('click', function() {
-            console.log("TEST")
-            playerName = nameInput.value
-            let message = {
-                id: messageId++,
-                type: NetworkIds.SNAKE_NAME,
-                playerName: playerName
-            };
-            socket.emit(NetworkIds.SNAKE_NAME, message);
-            winGameContainer.innerHTML = ""
-            winGameContainer.style.visibility = 'hidden';
+            // Check if nameInput has a value
+            if (nameInput.value.trim() !== '') {
+                playerName = nameInput.value;
+                let message = {
+                    id: messageId++,
+                    type: NetworkIds.SNAKE_NAME,
+                    playerName: playerName
+                };
+                socket.emit(NetworkIds.SNAKE_NAME, message);
+                winGameContainer.innerHTML = "";
+                winGameContainer.style.visibility = 'hidden';
+            } else {
+                // Handle the case when nameInput is empty
+                alert("Please enter a name before you continue");
+            }
         });
         
         // Style the container
@@ -388,7 +394,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
         
         
         function delayedFunction() {
-            console.log("TEST");
             let message = {
                 id: messageId++,
                 type: NetworkIds.TUTORIAL_DONE,
@@ -408,6 +413,41 @@ MyGame.main = (function(graphics, renderer, input, components) {
         winGameContainer.appendChild(winGameText);
         setTimeout(delayedFunction, 3000);
     }
+
+    function renderHighscoreInfo() {
+
+        let fuelContainer = document.getElementById('highscore-info');
+        fuelContainer.innerHTML = '';
+        
+        if(playerSelf?.model?.segments?.length>0){
+            fuelContainer.style.visibility = 'visible';
+            let yourScore = document.createElement('h2');
+            // Set the text content to be name and associated score
+            yourScore.textContent = "Your Score" + ': ' + playerSelf.model.segments?.length;
+            // Append the <h2> element to the fuelContainer
+            fuelContainer.appendChild(yourScore);
+        }
+
+       // Loop through each name and score in currentScores
+       if(Object.keys(currentScores).length>0){
+            fuelContainer.style.visibility = 'visible';
+            for (let name in currentScores) {
+                if (currentScores.hasOwnProperty(name) && name !== 'undefined' && name !== '') {
+                    // Create an <h2> element for the name and score
+                    let highscoreElement = document.createElement('h2');
+                    // Set the text content to be name and associated score
+                    highscoreElement.textContent = name + ': ' + currentScores[name];
+                    // Append the <h2> element to the fuelContainer
+                    fuelContainer.appendChild(highscoreElement);
+                }
+            }
+        } else if(playerSelf?.model?.segments?.length>0){
+            fuelContainer.style.visibility = 'visible';
+        } else {
+            fuelContainer.style.visibility = 'hidden';
+        }
+    }
+
 
     function dead(data) {
         
@@ -497,6 +537,23 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
     }
 
+    function sortScoresDescending() {
+        // Convert currentScores to an array of key-value pairs
+        let scoresArray = Object.entries(currentScores);
+    
+        // Sort the array based on the score values in descending order
+        scoresArray.sort((a, b) => b[1] - a[1]);
+    
+        // Convert the sorted array back into an object
+        let sortedScores = {};
+        for (let [name, score] of scoresArray) {
+            sortedScores[name] = score;
+        }
+    
+        // Update currentScores with the sorted scores
+        currentScores = sortedScores;
+    }
+
     //------------------------------------------------------------------
     //
     // Update the game simulation
@@ -504,9 +561,23 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function update(elapsedTime) {
         playerSelf.model.update(elapsedTime);
+        if (!currentScores.hasOwnProperty(playerSelf.model.playerName)){
+            currentScores[playerSelf?.model?.playerName] = playerSelf?.model?.segments?.length
+        }
+        else(
+            currentScores[playerSelf?.model?.playerName] = playerSelf?.model?.segments?.length
+        )
         for (let id in playerOthers) {
             playerOthers[id].model.update(elapsedTime);
+            if (!currentScores.hasOwnProperty(playerOthers[id].model.state.playerName)){
+                currentScores[playerOthers[id].model.state.playerName] = playerOthers[id].model.state.segments.length
+            }
+            else(
+                currentScores[playerOthers[id].model.state.playerName] = playerOthers[id].model.state.segments.length
+            )
         }
+
+        sortScoresDescending()
 
         let removefoods = [];
        
@@ -546,6 +617,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         graphics.clear();
         if(!playerSelf.model.dead && playerSelf.model.playerName){
             renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
+            
         }
         for (let id in playerOthers) {
             let player = playerOthers[id];
@@ -568,6 +640,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         for (let id in particles){
             renderer.ParticleSystem.render(particles[id], graphics, MyGame.assets['particle-fire'])
         }
+        renderHighscoreInfo()
+        
     }
 
     //------------------------------------------------------------------
