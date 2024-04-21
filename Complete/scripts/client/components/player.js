@@ -55,12 +55,13 @@ MyGame.components.Player = function() {
     //
     //------------------------------------------------------------------
     that.addSegment = function() {
+        
         let newSegment
         if(segments.length===0){
-            newSegment = createSegment(position);
+            newSegment = createSegment(position, direction);
         }
         else{
-            newSegment = createSegment(segments[segments.length - 1].position);
+            newSegment = createSegment(segments[segments.length - 1].position, segments[segments.length - 1].direction);
         }
 
         segments.push(newSegment);
@@ -160,13 +161,15 @@ MyGame.components.Player = function() {
     // Function to create a new segment of the player.
     //
     //------------------------------------------------------------------
-    function createSegment(playerPosition) {
+    function createSegment(position, direction) {
         let segment = {};
-
-        segment.position = {x: playerPosition.x,
-            y: playerPosition.y}; // Position of the segment
-        segment.direction = 0; // Direction of the segment
-        segment.speed = 0.0002; // Speed of the segment
+        let oppositeDirection = direction + Math.PI;
+        segment.position = {
+            x: position.x - 0.1 * Math.cos(direction),
+            y: position.y - 0.1 * Math.sin(direction)
+        }; 
+        segment.direction = direction; 
+        segment.speed = 0.0002; 
         segment.size = {
             width: 0.15,
             height: 0.15,

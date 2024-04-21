@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Change Controls</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+    #gameSpace {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f0f0;
+    }
+    #buttonContainer {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    button {
+        width: 200px;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+<div id="gameSpace"></div>
+
+<script>
+class ChangeControlsScene {
+    constructor() {
+        this.buttons = [
+            { label: "ButtonOne", control: localStorage.getItem('buttonOne') || 'KeyA' },
+            { label: "ButtonTwo", control: localStorage.getItem('buttonTwo') || 'KeyS' },
+            { label: "ButtonThree", control: localStorage.getItem('buttonThree') || 'KeyD' },
+        ];
+        this.draw();
+    }
+
+    draw() {
+        const gameSpaceDiv = document.getElementById('gameSpace');
+        gameSpaceDiv.innerHTML = '';
+
+        const div = document.createElement('div');
+        div.style.backgroundColor = "black";
+        div.style.padding = "20px";
+        div.style.borderRadius = "10px";
+        div.style.display = "flex";
+        div.style.flexDirection = "column";
+        div.id = "buttonContainer";
+        gameSpaceDiv.appendChild(div);
+
+        this.buttons.forEach(buttonInfo => {
+            const button = document.createElement('button');
+            button.textContent = `${buttonInfo.label}: ${buttonInfo.control}`;
+            button.addEventListener('click', () => {
+                button.style.background = "grey";
+                const keypressHandler = (event) => {
+                    localStorage.setItem(buttonInfo.label.toLowerCase(), event.code);
+                    button.textContent = `${buttonInfo.label}: ${event.code}`;
+                    button.style.background = "white";
+                    document.removeEventListener('keydown', keypressHandler);
+                };
+                document.addEventListener('keydown', keypressHandler);
+            });
+            div.appendChild(button);
+        });
+
+        // Add listener for backspace key press to return to main menu
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Backspace') {
+                // Navigate to main menu
+                alert("Returning to Main Menu");
+                // Add your code here to navigate to the main menu
+            }
+        });
+    }
+}
+
+// Initialize the scene when the page loads
+window.onload = () => {
+    new ChangeControlsScene();
+};
+</script>
+</body>
+</html>

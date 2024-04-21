@@ -250,10 +250,12 @@ MyGame.main = (function(graphics, renderer, input, components) {
             timeRemaining: data.timeRemaining
             
         });
+        let randSize = 0.025 + Math.random() * (0.05 - 0.025);
+        
         AnimatedFoods[data.id] = components.AnimatedSprite({
             id: data.id,
             spriteSheet: MyGame.assets['SpinnyYellow'],
-            spriteSize: {width: 0.03, height: 0.03},
+            spriteSize: {width: randSize, height: randSize},
             spriteCenter: data.position,
             spriteCount: 4,
             spriteTime: [300,300,300,300]
@@ -291,6 +293,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // When we receive a hit notification, go ahead and remove the
         // associated missle from the client model.
         delete foods[data.foodId];
+        delete AnimatedFoods[data.foodId];
     }
 
     function snakeHit(data) {
@@ -452,7 +455,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
         
         for (let food in foods) {
-            
             
             renderer.AnimatedSprite.render(AnimatedFoods[food])
         }
