@@ -22,6 +22,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         nextExplosionId = 1,
         socket = io(),
         networkQueue = Queue.create();
+        let controls = JSON.parse(localStorage.getItem('controls'))
         let particles = {}
         let particlesFire = components.ParticleSystem({
             center: { x: playerSelf.model.position?.x, y: playerSelf.model.position.y },
@@ -502,7 +503,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             messageHistory.enqueue(message);
             playerSelf.model.rotateSouthEast(elapsedTime);
         },
-        ['w','d'], true);
+        [controls.Up,controls.Right], true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -514,7 +515,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateUp(elapsedTime);
             },
-            ['w'], true);
+            [controls.Up], true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -526,7 +527,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateRight(elapsedTime);
             },
-            ['d'], true);
+            [controls.Right], true);
 
 
             myKeyboard.registerHandler(elapsedTime => {
@@ -540,7 +541,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 playerSelf.model.addSegment();
 
             },
-            't', true);
+            controls.addSegment, true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -552,7 +553,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateLeft(elapsedTime);
             },
-            'a', true);
+            controls.Left, true);
         myKeyboard.registerHandler(elapsedTime => {
             let message = {
                 id: messageId++,
@@ -563,7 +564,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             messageHistory.enqueue(message);
             playerSelf.model.rotateDown(elapsedTime);
         },
-        's', true);
+        controls.Down, true);
 
         //
         // Get the game loop started

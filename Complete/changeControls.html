@@ -38,10 +38,23 @@
 <script>
 class ChangeControlsScene {
     constructor() {
+        this.Up = "Up";
+        this.Down = "Down";
+        this.Right = "Right";
+        this.Left = "Left";
+        this.addSegment = "addSegment"
+        if(!localStorage.getItem('controls')){
+            this.controls = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
+            localStorage.setItem('controls', JSON.stringify(this.controls))
+        }
+        this.controls = JSON.parse(localStorage.getItem('controls'));
+
         this.buttons = [
-            { label: "ButtonOne", control: localStorage.getItem('buttonOne') || 'KeyA' },
-            { label: "ButtonTwo", control: localStorage.getItem('buttonTwo') || 'KeyS' },
-            { label: "ButtonThree", control: localStorage.getItem('buttonThree') || 'KeyD' },
+            { label: this.Up, control: this.controls.Up},
+            { label: this.Right, control:  this.controls.Right },
+            { label: this.Left, control:  this.controls.Left },
+            { label: this.Down, control:  this.controls.Down },
+            { label: this.addSegment, control:  this.controls.addSegment },
         ];
         this.draw();
     }
@@ -49,6 +62,11 @@ class ChangeControlsScene {
     draw() {
         const gameSpaceDiv = document.getElementById('gameSpace');
         gameSpaceDiv.innerHTML = '';
+
+        const ContainerDiv = document.createElement('div');
+        gameSpaceDiv.appendChild(ContainerDiv);
+        const textNode = document.createTextNode("Press ESCAPE to return to menu");
+        ContainerDiv.appendChild(textNode);
 
         const div = document.createElement('div');
         div.style.backgroundColor = "black";
@@ -58,16 +76,24 @@ class ChangeControlsScene {
         div.style.flexDirection = "column";
         div.id = "buttonContainer";
         gameSpaceDiv.appendChild(div);
-
         this.buttons.forEach(buttonInfo => {
             const button = document.createElement('button');
             button.textContent = `${buttonInfo.label}: ${buttonInfo.control}`;
             button.addEventListener('click', () => {
+                let controls = JSON.parse(localStorage.getItem('controls')) || {};
+                let controlDict = {};
+
+                for (let control in controls) {
+                    if (controls.hasOwnProperty(control)) {
+                        controlDict[control] = controls[control];
+                    }
+                }
                 button.style.background = "grey";
                 const keypressHandler = (event) => {
-                    localStorage.setItem(buttonInfo.label.toLowerCase(), event.code);
                     button.textContent = `${buttonInfo.label}: ${event.code}`;
                     button.style.background = "white";
+                    controlDict[buttonInfo.label] = event.code;
+                    localStorage.setItem('controls', JSON.stringify(controlDict))
                     document.removeEventListener('keydown', keypressHandler);
                 };
                 document.addEventListener('keydown', keypressHandler);
@@ -77,10 +103,8 @@ class ChangeControlsScene {
 
         // Add listener for backspace key press to return to main menu
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'Backspace') {
-                // Navigate to main menu
-                alert("Returning to Main Menu");
-                // Add your code here to navigate to the main menu
+            if (event.code === 'Escape') {
+                window.location.href = 'menu.html';
             }
         });
     }
