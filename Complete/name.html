@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunar Lander</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="menu">
+        <h1 >Lunar Lander</h1>
+        <form id="nameForm">
+            <label for="nameInput">Enter your name:</label>
+            <input type="text" id="nameInput" name="nameInput">
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+        let highScores = localStorage.getItem('highScores');
+        if (highScores === null || highScores?.length === 0) {
+            highScores = JSON.stringify({
+                "highscore 1": 35,
+                "highscore 2": 40,
+                "highscore 3": 45,
+                "highscore 4": 50,
+                "highscore 5": 55
+            });
+            localStorage.setItem('highScores', highScores);
+        } else {
+            highScores = JSON.parse(highScores);
+        }
+    </script>
+</body>
+</html>

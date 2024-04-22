@@ -13,7 +13,7 @@ let random = require('./random');
 // at some random location.
 //
 //------------------------------------------------------------------
-function createPlayer() {
+function createPlayer(name) {
     let that = {};
 
     let position = {
@@ -33,6 +33,8 @@ function createPlayer() {
     let reportUpdate = false; // Indicates if this model was updated during the last update
     let targetLocations = []
     let dead = false
+    let playerName = name
+    let invincibility = 100
 
 
     
@@ -43,6 +45,10 @@ function createPlayer() {
 
     Object.defineProperty(that, 'position', {
         get: () => position
+    });
+
+    Object.defineProperty(that, 'playerName', {
+        get: () => playerName
     });
 
     Object.defineProperty(that, 'size', {
@@ -59,6 +65,10 @@ function createPlayer() {
 
     Object.defineProperty(that, 'segments', {
         get: () => segments
+    });
+
+    Object.defineProperty(that, 'invincibility', {
+        get: () => invincibility
     });
 
     Object.defineProperty(that, 'reportUpdate', {
@@ -133,6 +143,13 @@ function createPlayer() {
         direction = 0.785398
     };
 
+    that.updatePlayerName = function(name) {
+        console.log("TEST 3")
+        console.log(name)
+        reportUpdate = true;
+        playerName = name
+    };
+
     //------------------------------------------------------------------
     //
     // Rotates the player left based on how long it has been since the
@@ -155,6 +172,9 @@ function createPlayer() {
     //
     //------------------------------------------------------------------
     that.update = function(when) {
+        if(invincibility>0){
+            invincibility--
+        }
         if(direction>6.283 || direction < -6.283){
             direction = 0
         }

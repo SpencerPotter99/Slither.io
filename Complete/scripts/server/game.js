@@ -83,6 +83,9 @@ function processInput(elapsedTime) {
             case NetworkIds.INPUT_ADD_SEGMENT:
                 client.player.addSegment();
                 break;
+            case NetworkIds.CONNECT_SNAKE:
+                client.player.updatePlayerName(input.message.playerName);
+                break;
         }
     }
 }
@@ -112,7 +115,7 @@ function update(elapsedTime, currentTime) {
             activeClients[clientId].player.update(currentTime);
             activeClients[clientId].player.move(elapsedTime)
             for (let otherClientId in activeClients){
-                if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead){
+                if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead && activeClients[otherClientId].player.invincibility <= 0 && activeClients[clientId].player.invincibility<=0 ){
                     if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
                         console.log("HIT")
                         //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
@@ -257,6 +260,7 @@ function updateClients(elapsedTime) {
             direction: client.player.direction,
             position: client.player.position,
             segments: client.player.segments,
+            name: client.player.playerName,
             dead: client.player.dead,
             updateWindow: lastUpdate
         };
@@ -309,6 +313,7 @@ function updateClients(elapsedTime) {
     //
     // Don't need these anymore, clean up
     hits.length = 0;
+    segmentHits.length = 0;
     //
     // Reset the elapsed time since last update so we can know
     // when to put out the next update.
@@ -316,13 +321,7 @@ function updateClients(elapsedTime) {
    
     
 }
-function handlePlayerDisconnect(clientId, client) {
-        client.socket.emit(NetworkIds.DEAD_SNAKE, clientId)
 
-        
-        delete activeClients[clientId];
-        //notifyDisconnect(clientId); // You need to implement notifyDisconnect function
-}
 //------------------------------------------------------------------
 //
 // Server side game loop
@@ -357,7 +356,7 @@ function initializeSocketIO(httpServer) {
     // other players already connected.
     //
     //------------------------------------------------------------------
-    function notifyConnect(socket, newPlayer) {
+    function notifyConnect(socket, newPlayer, name) {
         for (let clientId in activeClients) {
             let client = activeClients[clientId];
             if (newPlayer.clientId !== clientId) {
@@ -370,6 +369,7 @@ function initializeSocketIO(httpServer) {
                     rotateRate: newPlayer.rotateRate,
                     speed: newPlayer.speed,
                     size: newPlayer.size,
+                    name: name,
                     segments: newPlayer.getSegments(),
                 });
                
@@ -407,62 +407,92 @@ function initializeSocketIO(httpServer) {
             let client = activeClients[clientId];
             if (playerId !== clientId) {
                 client.socket.emit(NetworkIds.DISCONNECT_OTHER, {
-                    clientId: playerId
+                    clientId: playerId,
+                    name: activeClients[playerId]?.player?.playerName
                 });
             }
         }
+        delete activeClients[playerId];
     }
     
     io.on('connection', function(socket) {
         console.log('Connection established: ', socket.id);
         //
         // Create an entry in our list of connected clients
-        let newPlayer = Player.create()
-        newPlayer.clientId = socket.id;
-        activeClients[socket.id] = {
-            socket: socket,
-            player: newPlayer
-        };
-        newPlayer.addSegment();
-        socket.emit(NetworkIds.CONNECT_ACK, {
-            direction: newPlayer.direction,
-            position: newPlayer.position,
-            size: newPlayer.size,
-            rotateRate: newPlayer.rotateRate,
-            speed: newPlayer.speed,
-            segments: newPlayer.getSegments(),
-        });
-        let foodMessages = [];
-        for (let item = 0; item < activeFood.length; item++) {
-            let food = activeFood[item];
-            foodMessages.push({
-                id: food.id,
-                 position: {
-                x: food.position.x,
-                 y: food.position.y
-                },
-                radius: food.radius,
-                timeRemaining: food.timeRemaining
-            });
-        }
-    
-        for (let food = 0; food < foodMessages.length; food++) {
         
-        socket.emit(NetworkIds.FOOD_NEW, foodMessages[food]);
-        }
-        socket.on(NetworkIds.INPUT, data => {
-            inputQueue.enqueue({
-                clientId: socket.id,
-                message: data
-            });
+        socket.emit(NetworkIds.CONNECT_ACK, {
+
         });
 
+        socket.on(NetworkIds.SNAKE_NAME, data => {
+            socket.emit(NetworkIds.TUTORIAL_START, {
+            });
+
+            socket.on(NetworkIds.TUTORIAL_DONE, dataTUT => {
+                inputQueue.enqueue({
+                    clientId: socket.id,
+                    message: data
+                });
+                let newPlayer
+                
+                inputQueue.enqueue({
+                    clientId: socket.id,
+                    message: data
+                });
+                newPlayer = Player.create(data.playerName)
+                newPlayer.updatePlayerName(data.playerName)
+                console.log(newPlayer.playerName)
+                newPlayer.clientId = socket.id;
+                activeClients[socket.id] = {
+                    socket: socket,
+                    player: newPlayer
+                };
+                let foodMessages = [];
+                for (let item = 0; item < activeFood.length; item++) {
+                    let food = activeFood[item];
+                    foodMessages.push({
+                        id: food.id,
+                         position: {
+                        x: food.position.x,
+                         y: food.position.y
+                        },
+                        radius: food.radius,
+                        timeRemaining: food.timeRemaining
+                    });
+                }
+
+                for (let food = 0; food < foodMessages.length; food++) {
+
+                socket.emit(NetworkIds.FOOD_NEW, foodMessages[food]);
+                }
+                newPlayer.addSegment();
+                socket.emit(NetworkIds.CONNECT_SNAKE, {
+                    playerName: data.playerName,
+                    direction: newPlayer.direction,
+                    position: newPlayer.position,
+                    size: newPlayer.size,
+                    rotateRate: newPlayer.rotateRate,
+                    speed: newPlayer.speed,
+                    segments: newPlayer.getSegments(),
+                },
+                notifyConnect(socket, newPlayer, data.playerName));
+                socket.on(NetworkIds.INPUT, data => {
+                    inputQueue.enqueue({
+                        clientId: socket.id,
+                        message: data
+                    });
+                });
+            }); 
+            
+        });
+
+
+
         socket.on('disconnect', function() {
-            delete activeClients[socket.id];
             notifyDisconnect(socket.id);
         });
 
-        notifyConnect(socket, newPlayer);
+        
     });
 }
 

@@ -19,7 +19,9 @@ let mimeTypes = {
             lookup = '/menu.html';
         } else if (request.url === '/index') {
             lookup = '/index.html'; // Assuming 'menu.html' is the file you want to serve
-        } else {
+        } else if (request.url === '/name') {
+            lookup = '/name.html'; // Assuming 'menu.html' is the file you want to serve
+        }else {
             lookup = decodeURI(request.url);
         }
         let file = lookup.substring(1, lookup.length);

@@ -24,6 +24,10 @@ MyGame.renderer.PlayerRemote = (function(graphics) {
             graphics.restoreContext();
         }
         graphics.restoreContext();
+        graphics.saveContext();
+        graphics.rotateCanvas(model.state.position, model.state.direction);
+        graphics.drawText(model.state.playerName, model.state.position.x, model.state.position.y, "25px Arial", "#750000")
+        graphics.restoreContext();
     };
 
     return that;
