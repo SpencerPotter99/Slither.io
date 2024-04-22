@@ -561,6 +561,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function update(elapsedTime) {
         playerSelf.model.update(elapsedTime);
+        graphics.updatePlayer(playerSelf.model)
         if (!currentScores.hasOwnProperty(playerSelf.model.playerName)){
             currentScores[playerSelf?.model?.playerName] = playerSelf?.model?.segments?.length
         }
@@ -615,8 +616,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function render() {
         graphics.clear();
+        
         if(!playerSelf.model.dead && playerSelf.model.playerName){
-            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
+            const canvasSize = { width: graphics.canvas.width, height: graphics.canvas.height };
+            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure, canvasSize);
+
             
         }
         for (let id in playerOthers) {

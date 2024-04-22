@@ -8,6 +8,8 @@ MyGame.graphics = (function() {
 
     let canvas = document.getElementById('canvas-main');
     let context = canvas.getContext('2d')
+    let playerX = 0
+    let playerY = 0
 
     //------------------------------------------------------------------
     //
@@ -47,6 +49,11 @@ MyGame.graphics = (function() {
     //------------------------------------------------------------------
     function restoreContext() {
         context.restore();
+    }
+
+    function updatePlayer(player){
+        playerX = player.position.x
+        playerY = player.position.y
     }
 
     //------------------------------------------------------------------
@@ -111,7 +118,6 @@ MyGame.graphics = (function() {
             y: positionY * canvas.width
         };
 
-        console.log(localCenter)
         context.font = font; // Set the font style and size
         context.fillStyle = color;
         context.fillText(text, localCenter.x- 40, localCenter.y - 40); // Draw the text at the specified position
@@ -162,6 +168,8 @@ MyGame.graphics = (function() {
     }
 
     return {
+        canvas: canvas,
+        updatePlayer, updatePlayer,
         clear: clear,
         drawText: drawText,
         saveContext: saveContext,
