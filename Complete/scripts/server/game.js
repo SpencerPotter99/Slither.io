@@ -10,7 +10,7 @@ let Player = require('./player');
 let Food = require('./food');
 let NetworkIds = require('../shared/network-ids');
 let Queue = require('../shared/queue.js');
-let FoodAMT = 5;
+let FoodAMT = 20;
 const SIMULATION_UPDATE_RATE_MS = 50;
 const STATE_UPDATE_RATE_MS = 100;
 let lastUpdate = 0;
@@ -302,10 +302,12 @@ function updateClients(elapsedTime) {
         for (let hit = 0; hit < hits.length; hit++) {
             client.socket.emit(NetworkIds.FOOD_HIT, hits[hit]);
         }
+        
     }
 
     for (let clientId in activeClients) {
         activeClients[clientId].player.reportUpdate = false;
+        
     }
 
     //
@@ -316,6 +318,8 @@ function updateClients(elapsedTime) {
     // Reset the elapsed time since last update so we can know
     // when to put out the next update.
     lastUpdate = 0;
+   
+    
 }
 
 //------------------------------------------------------------------
@@ -368,6 +372,7 @@ function initializeSocketIO(httpServer) {
                     name: name,
                     segments: newPlayer.getSegments(),
                 });
+               
 
                 //
                 // Tell the new player about the already connected player
@@ -378,8 +383,15 @@ function initializeSocketIO(httpServer) {
                     rotateRate: client.player.rotateRate,
                     speed: client.player.speed,
                     size: client.player.size,
-                    segments: client.player.getSegments(),
+                    segments: client.player.getSegments()
                 });
+               
+                
+                
+                    
+                        
+                  
+                
             }
         }
     }
@@ -414,7 +426,6 @@ function initializeSocketIO(httpServer) {
 
         socket.on(NetworkIds.SNAKE_NAME, data => {
             socket.emit(NetworkIds.TUTORIAL_START, {
-
             });
 
             socket.on(NetworkIds.TUTORIAL_DONE, dataTUT => {
@@ -436,6 +447,24 @@ function initializeSocketIO(httpServer) {
                     socket: socket,
                     player: newPlayer
                 };
+                let foodMessages = [];
+                for (let item = 0; item < activeFood.length; item++) {
+                    let food = activeFood[item];
+                    foodMessages.push({
+                        id: food.id,
+                         position: {
+                        x: food.position.x,
+                         y: food.position.y
+                        },
+                        radius: food.radius,
+                        timeRemaining: food.timeRemaining
+                    });
+                }
+
+                for (let food = 0; food < foodMessages.length; food++) {
+
+                socket.emit(NetworkIds.FOOD_NEW, foodMessages[food]);
+                }
                 newPlayer.addSegment();
                 socket.emit(NetworkIds.CONNECT_SNAKE, {
                     playerName: data.playerName,

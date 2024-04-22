@@ -26,7 +26,7 @@ function createPlayer(name) {
         height: 0.15,
         radius: 0.10
     };
-    let direction = random.nextDouble() * 2 * Math.PI; // Angle in radians
+    let direction = 0; // Angle in radians
     let rotateRate = Math.PI / 1000; // radians per millisecond
     let speed = 0.0002; // unit distance per millisecond
     let segments = []; // Array to store snake segments
@@ -194,10 +194,10 @@ function createPlayer(name) {
         reportUpdate = true;
         let newSegment
         if(segments.length===0){
-            newSegment = createSegment(position);
+            newSegment = createSegment(position, direction);
         }
         else{
-            newSegment = createSegment(segments[segments.length - 1].position);
+            newSegment = createSegment(segments[segments.length - 1].position, segments[segments.length - 1].direction);
         }
 
         segments.push(newSegment);
@@ -213,6 +213,7 @@ function createPlayer(name) {
     };
 
     return that;
+    
 }
 
 //------------------------------------------------------------------
@@ -220,15 +221,18 @@ function createPlayer(name) {
 // Function to create a new segment of the snake.
 //
 //------------------------------------------------------------------
-function createSegment(playerPosition) {
+function createSegment(position, direction) {
     let segment = {};
 
-    // Initialize the segment with the player's position
+    let oppositeDirection = direction + Math.PI;
+
+    // Adjust the position based on the opposite direction
     segment.position = {
-        x: playerPosition.x-.15,
-        y: playerPosition.y
-    };
-    segment.direction = 0; // Direction of the segment
+        x: position.x - 0.1 * Math.cos(direction),
+        y: position.y - 0.1 * Math.sin(direction)
+    }; 
+
+    segment.direction = direction; // Direction of the segment
     segment.size = {
         width: 0.15,
         height: 0.15,

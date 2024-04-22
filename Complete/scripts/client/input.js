@@ -93,13 +93,13 @@ MyGame.input.Keyboard = function () {
     //
     // ------------------------------------------------------------------
     function keyDown(event) {
-        keys[event.key] = event.timeStamp;
+        keys[event.code] = event.timeStamp;
         //
         // Because we can continuously receive the keyDown event, check to
         // see if we already have this property.  If we do, we don't want to
         // overwrite the value that already exists.
-        if (keyRepeat.hasOwnProperty(event.key) === false) {
-            keyRepeat[event.key] = false;
+        if (keyRepeat.hasOwnProperty(event.code) === false) {
+            keyRepeat[event.code] = false;
         }
     }
 
@@ -111,8 +111,8 @@ MyGame.input.Keyboard = function () {
     //
     // ------------------------------------------------------------------
     function keyRelease(event) {
-        delete keys[event.key];
-        delete keyRepeat[event.key];
+        delete keys[event.code];
+        delete keyRepeat[event.code];
     }
 
     // ------------------------------------------------------------------
