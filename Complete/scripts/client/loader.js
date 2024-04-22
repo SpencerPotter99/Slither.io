@@ -64,7 +64,12 @@ MyGame.loader = (function() {
         },{
             key: 'explosion',
             source: 'assets/explosion.png'
-        }];
+        },{
+            key: 'SpinnyYellow',
+            source: 'assets/SpinnyYellow.png'
+        }
+    
+    ];
 
     //------------------------------------------------------------------
     //

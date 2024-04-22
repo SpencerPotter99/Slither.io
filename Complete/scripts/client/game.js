@@ -16,11 +16,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerOthers = {},
         foods = {},
         explosions = {},
+        AnimatedFoods = {},
         messageHistory = Queue.create(),
         messageId = 1,
         nextExplosionId = 1,
         socket = io(),
         networkQueue = Queue.create();
+        if(!localStorage.getItem('controls')){
+            var TMPcontrols = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
+            localStorage.setItem('controls', JSON.stringify(TMPcontrols))
+        }
+        let controls = JSON.parse(localStorage.getItem('controls'))
         let particles = {}
         let particlesFire = components.ParticleSystem({
             center: { x: playerSelf.model.position?.x, y: playerSelf.model.position.y },
@@ -238,6 +244,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function foodNew(data) {
+        console.log("revieving Food" + data)
         foods[data.id] = components.Food({
             id: data.id,
             radius: data.radius,
@@ -248,7 +255,18 @@ MyGame.main = (function(graphics, renderer, input, components) {
             timeRemaining: data.timeRemaining
             
         });
-        console.log(foods)
+        let randSize = 0.025 + Math.random() * (0.05 - 0.025);
+        
+        AnimatedFoods[data.id] = components.AnimatedSprite({
+            id: data.id,
+            spriteSheet: MyGame.assets['SpinnyYellow'],
+            spriteSize: {width: randSize, height: randSize},
+            spriteCenter: data.position,
+            spriteCount: 4,
+            spriteTime: [300,300,300,300]
+        })
+
+        
     }
 
     //------------------------------------------------------------------
@@ -275,12 +293,12 @@ MyGame.main = (function(graphics, renderer, input, components) {
         socket.emit(NetworkIds.INPUT, message);
         messageHistory.enqueue(message);
         playerSelf.model.addSegment();
-        console.log("added")
-
+        
         //
         // When we receive a hit notification, go ahead and remove the
         // associated missle from the client model.
         delete foods[data.foodId];
+        delete AnimatedFoods[data.foodId];
     }
 
     function snakeHit(data) {
@@ -410,6 +428,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         for (let food = 0; food < removefoods.length; food++) {
             delete foods[removefoods[food].id];
         }
+        for (let id in AnimatedFoods){
+            AnimatedFoods[id].update(elapsedTime);
+        }
 
         for (let id in explosions) {
             //particlesFire.update(elapsedTime)
@@ -439,7 +460,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
         
         for (let food in foods) {
-            renderer.Food.render(foods[food]);
+            
+            renderer.AnimatedSprite.render(AnimatedFoods[food])
         }
 
         for (let id in explosions) {
@@ -485,7 +507,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             messageHistory.enqueue(message);
             playerSelf.model.rotateSouthEast(elapsedTime);
         },
-        ['w','d'], true);
+        [controls.Up,controls.Right], true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -497,7 +519,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateUp(elapsedTime);
             },
-            ['w'], true);
+            [controls.Up], true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -509,7 +531,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateRight(elapsedTime);
             },
-            ['d'], true);
+            [controls.Right], true);
 
 
             myKeyboard.registerHandler(elapsedTime => {
@@ -523,7 +545,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 playerSelf.model.addSegment();
 
             },
-            't', true);
+            controls.addSegment, true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -535,7 +557,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateLeft(elapsedTime);
             },
-            'a', true);
+            controls.Left, true);
         myKeyboard.registerHandler(elapsedTime => {
             let message = {
                 id: messageId++,
@@ -546,7 +568,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             messageHistory.enqueue(message);
             playerSelf.model.rotateDown(elapsedTime);
         },
-        's', true);
+        controls.Down, true);
 
         //
         // Get the game loop started
