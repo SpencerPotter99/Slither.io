@@ -22,6 +22,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
         nextExplosionId = 1,
         socket = io(),
         networkQueue = Queue.create();
+        if(!localStorage.getItem('controls')){
+            var TMPcontrols = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
+            localStorage.setItem('controls', JSON.stringify(TMPcontrols))
+        }
         let controls = JSON.parse(localStorage.getItem('controls'))
         let particles = {}
         let particlesFire = components.ParticleSystem({
