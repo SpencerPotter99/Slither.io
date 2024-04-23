@@ -8,8 +8,6 @@ MyGame.graphics = (function() {
 
     let canvas = document.getElementById('canvas-main');
     let context = canvas.getContext('2d')
-    let playerX = 0
-    let playerY = 0
 
     //------------------------------------------------------------------
     //
@@ -22,6 +20,17 @@ MyGame.graphics = (function() {
         this.setTransform(1, 0, 0, 1, 0, 0);
         this.clearRect(0, 0, canvas.width, canvas.height);
         this.restore();
+    };
+
+    function drawText(text, positionX, positionY, font, color) {
+        let localCenter = {
+            x: positionX * canvas.width,
+            y: positionY * canvas.width
+        };
+
+        context.font = font; // Set the font style and size
+        context.fillStyle = color;
+        context.fillText(text, localCenter.x- 40, localCenter.y - 40); // Draw the text at the specified position
     };
 
     //------------------------------------------------------------------
@@ -49,11 +58,6 @@ MyGame.graphics = (function() {
     //------------------------------------------------------------------
     function restoreContext() {
         context.restore();
-    }
-
-    function updatePlayer(player){
-        playerX = player.position.x
-        playerY = player.position.y
     }
 
     //------------------------------------------------------------------
@@ -89,6 +93,25 @@ MyGame.graphics = (function() {
             localSize.height);
     }
 
+    function updatePlayer(player) {
+        let playerX = player.position.x;
+        let playerY = player.position.y;
+    
+        // Calculate the new viewport dimensions
+        let viewportWidth = canvas.width / 3;
+        let viewportHeight = canvas.height / 3;
+    
+        // Calculate the new viewport center based on player position
+        let viewportCenterX = playerX * canvas.width - viewportWidth / 2;
+        let viewportCenterY = playerY * canvas.height - viewportHeight / 2;
+    
+        // Adjust the transformation to center the viewport on the player and zoom in
+        context.setTransform(1, 0, 0, 1, -viewportCenterX + canvas.width / 2, -viewportCenterY + canvas.height / 2);
+    
+        // Clear the canvas
+        clear();
+    }
+
     //------------------------------------------------------------------
     //
     // Draw an image out of a spritesheet into the local canvas coordinate system.
@@ -111,17 +134,6 @@ MyGame.graphics = (function() {
             localCenter.y - localSize.height / 2,
             localSize.width, localSize.height);
     }
-
-    function drawText(text, positionX, positionY, font, color) {
-        let localCenter = {
-            x: positionX * canvas.width,
-            y: positionY * canvas.width
-        };
-
-        context.font = font; // Set the font style and size
-        context.fillStyle = color;
-        context.fillText(text, localCenter.x- 40, localCenter.y - 40); // Draw the text at the specified position
-    };
      // --------------------------------------------------------------
     //
     // Draws a texture to the canvas with the following specification:
@@ -131,25 +143,17 @@ MyGame.graphics = (function() {
     //
     // --------------------------------------------------------------
     function drawTexture(image, center, rotation, size) {
-        let localCenter = {
-            x: center.x * canvas.width,
-            y: center.y * canvas.width
-        };
-        let localSize = {
-            width: size.x * canvas.width,
-            height: size.y * canvas.height
-        };
         context.save();
 
-        context.translate(localCenter.x, localCenter.y);
+        context.translate(center.x, center.y);
         context.rotate(rotation);
-        context.translate(-localCenter.x, -localCenter.y);
+        context.translate(-center.x, -center.y);
 
         context.drawImage(
             image,
-            localCenter.x - localSize.width / 2,
-            localCenter.y - localSize.height / 2,
-            localSize.width, localSize.height);
+            center.x - size.x / 2,
+            center.y - size.y / 2,
+            size.x, size.y);
 
         context.restore();
     }
@@ -168,10 +172,9 @@ MyGame.graphics = (function() {
     }
 
     return {
-        canvas: canvas,
-        updatePlayer, updatePlayer,
+        updatePlayer: updatePlayer,
         clear: clear,
-        drawText: drawText,
+        drawText, drawText,
         saveContext: saveContext,
         restoreContext: restoreContext,
         rotateCanvas: rotateCanvas,

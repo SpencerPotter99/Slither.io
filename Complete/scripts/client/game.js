@@ -641,8 +641,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         graphics.clear();
         
         if(!playerSelf.model.dead && playerSelf.model.playerName){
-            const canvasSize = { width: graphics.canvas.width, height: graphics.canvas.height };
-            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure, canvasSize);
+            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
 
             
         }
