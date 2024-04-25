@@ -34,7 +34,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerSelf = {
             model: components.Player(),
             texture: MyGame.assets['player-self'],
-            segmentTexure: MyGame.assets['player-segment']
+            segmentTexure: MyGame.assets['player-segment'],
+            tailTexture: MyGame.assets['player-caboose']
         },
         playerOthers = {},
         foods = {},
@@ -209,7 +210,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerOthers[data.clientId] = {
             model: model,
             texture: MyGame.assets['player-other'],
-            segmentTexure: MyGame.assets['player-segment-other']
+            segmentTexure: MyGame.assets['player-segment-other'],
+            tailTexture: MyGame.assets['player-caboose-other']
         };
         console.log("connected other")
     }
@@ -683,13 +685,13 @@ MyGame.main = (function(graphics, renderer, input, components) {
         graphics.drawBackground(MyGame.assets['backgroundTile'])
         
         if(!playerSelf.model.dead && playerSelf.model.playerName){
-            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
+            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure, playerSelf.tailTexture);
         }
         for (let id in playerOthers) {
             let player = playerOthers[id];
 
             if(!player.model.goal.dead){
-                renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
+                renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure, player.tailTexture);
             }
         }
         

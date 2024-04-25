@@ -70,6 +70,12 @@ MyGame.loader = (function() {
         },{
             key: 'backgroundTile',
             source: 'assets/tile_aqua.png'
+        },{
+            key: 'player-caboose',
+            source: 'assets/caboose.png'
+        },{
+            key: 'player-caboose-other',
+            source: 'assets/evilCaboose.png'
         }
     
     ];
