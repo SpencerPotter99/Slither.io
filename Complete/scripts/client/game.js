@@ -1,3 +1,25 @@
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    this.volume = 1;
+    document.body.appendChild(this.sound);
+    this.play = function(){
+      this.sound.play();
+    }
+    this.stop = function(){
+      this.sound.pause();
+    }
+    this.setVolume = function(vol){
+        if(vol >= 0 && vol <= 1){ // Ensure volume is between 0 and 1
+            this.volume = vol;
+            this.sound.volume = vol;
+        }
+    }
+  }
+
 //------------------------------------------------------------------
 //
 // This function provides the "game" code.
@@ -23,6 +45,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         nextExplosionId = 1,
         socket = io(),
         networkQueue = Queue.create();
+        let hornSound = new sound("../../assets/horn.mp3")
+        let explosionSound = new sound("../../assets/explosionSound.mp3")
         if(!localStorage.getItem('controls')){
             var TMPcontrols = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
             localStorage.setItem('controls', JSON.stringify(TMPcontrols))
@@ -324,6 +348,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             spriteTime: [ 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250]
         });
         */
+       hornSound.play()
         let message = {
             id: messageId++,
             elapsedTime: elapsedTime,
@@ -341,6 +366,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function snakeHit(data) {
+        explosionSound.play()
         explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
             spriteSheet: MyGame.assets['explosion'],
