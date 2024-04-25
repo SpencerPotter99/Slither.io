@@ -1,3 +1,25 @@
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    this.volume = 1;
+    document.body.appendChild(this.sound);
+    this.play = function(){
+      this.sound.play();
+    }
+    this.stop = function(){
+      this.sound.pause();
+    }
+    this.setVolume = function(vol){
+        if(vol >= 0 && vol <= 1){ // Ensure volume is between 0 and 1
+            this.volume = vol;
+            this.sound.volume = vol;
+        }
+    }
+  }
+
 //------------------------------------------------------------------
 //
 // This function provides the "game" code.
@@ -13,7 +35,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerSelf = {
             model: components.Player(),
             texture: MyGame.assets['player-self'],
-            segmentTexure: MyGame.assets['player-segment']
+            segmentTexure: MyGame.assets['player-segment'],
+            tailTexture: MyGame.assets['player-caboose']
         },
         playerOthers = {},
         foods = {},
@@ -24,12 +47,25 @@ MyGame.main = (function(graphics, renderer, input, components) {
         nextExplosionId = 1,
         socket = io(),
         networkQueue = Queue.create();
+        let hornSound = new sound("../../assets/horn.mp3")
+        let explosionSound = new sound("../../assets/explosionSound.mp3")
         if(!localStorage.getItem('controls')){
             var TMPcontrols = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
             localStorage.setItem('controls', JSON.stringify(TMPcontrols))
         }
         let controls = JSON.parse(localStorage.getItem('controls'))
         let particles = {}
+        
+        let highScores = localStorage.getItem('highScores')
+        let highScoresArray = []
+        if(highScores === null || highScores?.length === 0){
+            highScores = JSON.parse('{"highscore 1": 0, "highscore 2": 0, "highscore 3": 0, "highscore 4": 0, "highscore 5": 0}')
+            localStorage.setItem('highScores' , JSON.stringify(highScores))
+        }
+        else {
+            highScores = JSON.parse(highScores)
+        }
+
         let particlesFire = components.ParticleSystem({
             center: { x: playerSelf.model.position?.x, y: playerSelf.model.position.y },
             size: { mean: 10, stdev: 4 },
@@ -177,7 +213,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
         playerOthers[data.clientId] = {
             model: model,
             texture: MyGame.assets['player-other'],
-            segmentTexure: MyGame.assets['player-segment-other']
+            segmentTexure: MyGame.assets['player-segment-other'],
+            tailTexture: MyGame.assets['player-caboose-other']
         };
         console.log("connected other")
     }
@@ -316,6 +353,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             spriteTime: [ 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250]
         });
         */
+       hornSound.play()
         let message = {
             id: messageId++,
             elapsedTime: elapsedTime,
@@ -335,6 +373,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function snakeHit(data) {
+        explosionSound.play()
         explosions[nextExplosionId] = components.AnimatedSprite({
             id: nextExplosionId++,
             spriteSheet: MyGame.assets['explosion'],
@@ -491,7 +530,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // Add click event listener to the button
         returnToMenuButton.addEventListener('click', function() {
             // Redirect to /menu
+            checkScore()
             window.location.href = '/';
+            
         });
         
         // Style the container
@@ -503,6 +544,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // Append elements to the container
         winGameContainer.appendChild(winGameText);
         winGameContainer.appendChild(returnToMenuButton);
+        
 
     }
 
@@ -646,18 +688,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function render() {
         graphics.clear();
+
+        graphics.drawBackground(MyGame.assets['backgroundTile'])
         
         if(!playerSelf.model.dead && playerSelf.model.playerName){
-            const canvasSize = { width: graphics.canvas.width, height: graphics.canvas.height };
-            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure, canvasSize);
-
-            
+            renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure, playerSelf.tailTexture);
         }
         for (let id in playerOthers) {
             let player = playerOthers[id];
 
             if(!player.model.goal.dead){
-                renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure);
+                renderer.PlayerRemote.render(player.model, player.texture, player.segmentTexure, player.tailTexture);
             }
         }
         
@@ -768,6 +809,34 @@ MyGame.main = (function(graphics, renderer, input, components) {
         //
         // Get the game loop started
         requestAnimationFrame(gameLoop);
+    }
+
+    function checkScore() {
+        console.log("TESTTTTTTTTTTTT")
+        // Convert highScores object to an array of objects
+        for (let key in highScores) {
+            highScoresArray.push({ name: key, score: highScores[key] });
+        }
+
+        // Add the new score to highScoresArray
+        highScoresArray.push({ name: 'New Score', score: playerSelf.model.segments?.length});
+
+        // Sort highScoresArray by score in ascending order
+        highScoresArray.sort(function(a, b) {
+            return b.score - a.score;
+        });
+
+        // Keep the lowest 5 high scores
+        let lowestHighScoresArray = highScoresArray.slice(0, 5);
+
+        // Update highScores object with the combined scores
+        let updatedHighScores = {};
+        for (let i = 0; i < lowestHighScoresArray.length; i++) {
+            updatedHighScores["highscore " + (i+1)] = lowestHighScoresArray[i].score;
+        }
+
+        // Update localStorage with the updated high scores
+        localStorage.setItem('highScores', JSON.stringify(updatedHighScores));
     }
 
     return {

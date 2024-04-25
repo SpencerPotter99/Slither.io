@@ -54,7 +54,7 @@ MyGame.loader = (function() {
             source: 'assets/EvilEngine.png'
         }, {
             key: 'player-segment',
-            source: 'assets/Black-Circle.png'
+            source: 'assets/Logs.png'
         }, {
             key: 'player-segment-other',
             source: 'assets/EvilLogs.png'
@@ -67,6 +67,15 @@ MyGame.loader = (function() {
         },{
             key: 'SpinnyYellow',
             source: 'assets/SpinnyYellow.png'
+        },{
+            key: 'backgroundTile',
+            source: 'assets/tile_aqua.png'
+        },{
+            key: 'player-caboose',
+            source: 'assets/caboose.png'
+        },{
+            key: 'player-caboose-other',
+            source: 'assets/evilCaboose.png'
         }
     
     ];

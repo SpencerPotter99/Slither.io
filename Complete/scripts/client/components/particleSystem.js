@@ -11,7 +11,7 @@ MyGame.components.ParticleSystem = function(spec) {
     function clearParticles() {
         particles = {}
     }
-    console.log(spec)
+
 
     //------------------------------------------------------------------
     //
