@@ -639,11 +639,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //------------------------------------------------------------------
     function render() {
         graphics.clear();
+
+        graphics.drawBackground(MyGame.assets['backgroundTile'])
         
         if(!playerSelf.model.dead && playerSelf.model.playerName){
             renderer.Player.render(playerSelf.model, playerSelf.texture, playerSelf.segmentTexure);
-
-            
         }
         for (let id in playerOthers) {
             let player = playerOthers[id];

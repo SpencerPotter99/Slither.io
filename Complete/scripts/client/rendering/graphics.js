@@ -96,20 +96,39 @@ MyGame.graphics = (function() {
     function updatePlayer(player) {
         let playerX = player.position.x;
         let playerY = player.position.y;
+        console.log(playerX, playerY)
     
         // Calculate the new viewport dimensions
         let viewportWidth = canvas.width / 3;
         let viewportHeight = canvas.height / 3;
     
         // Calculate the new viewport center based on player position
-        let viewportCenterX = playerX * canvas.width - viewportWidth / 2;
-        let viewportCenterY = playerY * canvas.height - viewportHeight / 2;
+        let viewportCenterX = playerX * canvas.width - viewportWidth / 3;
+        let viewportCenterY = playerY * canvas.height - viewportHeight / 3;
     
         // Adjust the transformation to center the viewport on the player and zoom in
-        context.setTransform(1, 0, 0, 1, -viewportCenterX + canvas.width / 2, -viewportCenterY + canvas.height / 2);
+        context.setTransform(1, 0, 0, 1, -viewportCenterX + canvas.width / 3, -viewportCenterY + canvas.height / 3);
     
         // Clear the canvas
         clear();
+    }
+
+    function drawBackground(tileImage) {
+        // Calculate the number of tiles needed to fill the canvas
+        let numTilesX = Math.ceil(canvas.width / tileImage.width);
+        let numTilesY = Math.ceil(canvas.height / tileImage.height);
+    
+        // Loop through each row and column to draw the tiles
+        for (let row = 0; row < numTilesY; row++) {
+            for (let col = 0; col < numTilesX; col++) {
+                // Calculate the position of the current tile
+                let tileX = col * tileImage.width;
+                let tileY = row * tileImage.height;
+    
+                // Draw the tile at the calculated position
+                context.drawImage(tileImage, tileX, tileY);
+            }
+        }
     }
 
     //------------------------------------------------------------------
@@ -181,6 +200,7 @@ MyGame.graphics = (function() {
         drawImage: drawImage,
         drawTexture: drawTexture,
         drawImageSpriteSheet: drawImageSpriteSheet,
-        drawCircle: drawCircle
+        drawCircle: drawCircle,
+        drawBackground: drawBackground
     };
 }());
