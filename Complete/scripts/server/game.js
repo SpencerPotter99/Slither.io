@@ -441,7 +441,6 @@ function initializeSocketIO(httpServer) {
                 });
                 newPlayer = Player.create(data.playerName)
                 newPlayer.updatePlayerName(data.playerName)
-                console.log(newPlayer.playerName)
                 newPlayer.clientId = socket.id;
                 activeClients[socket.id] = {
                     socket: socket,

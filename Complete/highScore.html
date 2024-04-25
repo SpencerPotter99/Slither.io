@@ -3,28 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Train.io</title>
+    <title>Lunar Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div class="menu">
-        <h1 >Train.io</h1>
-        <button class="buttons"  onclick="window.location.href='/index'">
+        <h1>High Scores</h1>
+        <ul id="highScoresList"></ul>
+        <button class="buttons" onclick="window.location.href='index.html'">
             <h4>New Game</h4>
         </button>
-        <button class="buttons" onclick="window.location.href='highScore.html'">
-            <h4>View High Scores</h4>
+        <button class="buttons" onclick="window.location.href='menu.html'">
+            <h4>Main Menu</h4>
         </button>
-        <button class="buttons" onclick="window.location.href='changeControls.html'">
-            <h4>Customize Controls</h4>
-        </button>
-        <button class="buttons" onclick="window.location.href='credits.html'">
-            <h4>View Credits</h4>
-        </button>
-
-    
     </div>
+
     <script>
         let highScores = localStorage.getItem('highScores');
         if (!highScores || highScores.length === 0) {
@@ -39,6 +32,17 @@
         } else {
             highScores = JSON.parse(highScores);
         }
+
+        // Get the <ul> element
+        const highScoresList = document.getElementById('highScoresList');
+
+        // Loop through the high scores and create list items
+        for (let key in highScores) {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${key}: ${highScores[key]} Points`;
+            highScoresList.appendChild(listItem);
+        }
+
     </script>
 </body>
 </html>

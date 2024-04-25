@@ -144,8 +144,6 @@ function createPlayer(name) {
     };
 
     that.updatePlayerName = function(name) {
-        console.log("TEST 3")
-        console.log(name)
         reportUpdate = true;
         playerName = name
     };

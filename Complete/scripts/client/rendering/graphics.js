@@ -96,7 +96,6 @@ MyGame.graphics = (function() {
     function updatePlayer(player) {
         let playerX = player.position.x;
         let playerY = player.position.y;
-        console.log(playerX, playerY)
     
         // Calculate the new viewport dimensions
         let viewportWidth = canvas.width / 3;

@@ -29,6 +29,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
         let controls = JSON.parse(localStorage.getItem('controls'))
         let particles = {}
+        
+        let highScores = localStorage.getItem('highScores')
+        let highScoresArray = []
+        if(highScores === null || highScores?.length === 0){
+            highScores = JSON.parse('{"highscore 1": 0, "highscore 2": 0, "highscore 3": 0, "highscore 4": 0, "highscore 5": 0}')
+            localStorage.setItem('highScores' , JSON.stringify(highScores))
+        }
+        else {
+            highScores = JSON.parse(highScores)
+        }
+
         let particlesFire = components.ParticleSystem({
             center: { x: playerSelf.model.position?.x, y: playerSelf.model.position.y },
             size: { mean: 10, stdev: 4 },
@@ -486,7 +497,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // Add click event listener to the button
         returnToMenuButton.addEventListener('click', function() {
             // Redirect to /menu
+            checkScore()
             window.location.href = '/';
+            
         });
         
         // Style the container
@@ -498,6 +511,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // Append elements to the container
         winGameContainer.appendChild(winGameText);
         winGameContainer.appendChild(returnToMenuButton);
+        
 
     }
 
@@ -773,6 +787,34 @@ MyGame.main = (function(graphics, renderer, input, components) {
         //
         // Get the game loop started
         requestAnimationFrame(gameLoop);
+    }
+
+    function checkScore() {
+        console.log("TESTTTTTTTTTTTT")
+        // Convert highScores object to an array of objects
+        for (let key in highScores) {
+            highScoresArray.push({ name: key, score: highScores[key] });
+        }
+
+        // Add the new score to highScoresArray
+        highScoresArray.push({ name: 'New Score', score: playerSelf.model.segments?.length});
+
+        // Sort highScoresArray by score in ascending order
+        highScoresArray.sort(function(a, b) {
+            return b.score - a.score;
+        });
+
+        // Keep the lowest 5 high scores
+        let lowestHighScoresArray = highScoresArray.slice(0, 5);
+
+        // Update highScores object with the combined scores
+        let updatedHighScores = {};
+        for (let i = 0; i < lowestHighScoresArray.length; i++) {
+            updatedHighScores["highscore " + (i+1)] = lowestHighScoresArray[i].score;
+        }
+
+        // Update localStorage with the updated high scores
+        localStorage.setItem('highScores', JSON.stringify(updatedHighScores));
     }
 
     return {
