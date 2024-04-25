@@ -158,7 +158,9 @@ function update(elapsedTime, currentTime) {
                 }
             }
         }else{
-            activeClients[clientId].player.snakeHit(currentTime)
+            
+            activeClients[clientId].player.snakeHit(currentTime);
+           
         }
     }
 
@@ -292,14 +294,19 @@ function updateClients(elapsedTime) {
                 client.player.reportUpdate = true
                 //handlePlayerDisconnect(clientId, client)
                 client.player.dead = true
-                
                 //delete activeClients[clientId];
+                createFood(segmentHits[hit].position);
+                
             }
+            
+                
+            
         }
 
         //
         // Report any food hits to this client
         for (let hit = 0; hit < hits.length; hit++) {
+            console.log(hits[hit])
             client.socket.emit(NetworkIds.FOOD_HIT, hits[hit]);
         }
         
@@ -474,6 +481,8 @@ function initializeSocketIO(httpServer) {
                     rotateRate: newPlayer.rotateRate,
                     speed: newPlayer.speed,
                     segments: newPlayer.getSegments(),
+                    id: socket.id,
+
                 },
                 notifyConnect(socket, newPlayer, data.playerName));
                 socket.on(NetworkIds.INPUT, data => {

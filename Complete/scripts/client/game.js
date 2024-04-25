@@ -5,8 +5,9 @@
 //------------------------------------------------------------------
 MyGame.main = (function(graphics, renderer, input, components) {
     'use strict';
-    let playerName = ""
+    let playerName = "";
     let currentScores = {}
+    let id = 0;
     let lastTimeStamp = performance.now(),
         myKeyboard = input.Keyboard(),
         playerSelf = {
@@ -122,9 +123,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function connectPlayerSelf(data) {
+        console.log("ConnectPlayerSelf" + data)
         playerSelf.model.playerName = data.playerName
         playerSelf.model.position.x = data.position.x;
         playerSelf.model.position.y = data.position.y;
+        playerSelf.model.id = data.id;
 
         playerSelf.model.segments = data.segments
 
@@ -318,9 +321,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
             elapsedTime: elapsedTime,
             type: NetworkIds.INPUT_ADD_SEGMENT
         };
+        if(data.clientId == playerSelf.model.id){
         socket.emit(NetworkIds.INPUT, message);
         messageHistory.enqueue(message);
         playerSelf.model.addSegment();
+        }
         
         //
         // When we receive a hit notification, go ahead and remove the
@@ -542,6 +547,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     foodNew(message.data);
                     break;
                 case NetworkIds.FOOD_HIT:
+                    console.log(message.data)
+                    console.log(playerSelf)
                     foodHit(message.data, elapsedTime);
                     break;
                 case NetworkIds.SNAKE_HIT:
@@ -697,18 +704,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     function initialize() {
         console.log('game initializing...');
         //
-        // Registering the 'wd' key combination handler
-        myKeyboard.registerHandler(elapsedTime => {
-            let message = {
-                id: messageId++,
-                elapsedTime: elapsedTime,
-                type: NetworkIds.INPUT_ROTATE_SOUTH_EAST
-            };
-            socket.emit(NetworkIds.INPUT, message);
-            messageHistory.enqueue(message);
-            playerSelf.model.rotateSouthEast(elapsedTime);
-        },
-        [controls.Up,controls.Right], true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -720,7 +715,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateUp(elapsedTime);
             },
-            [controls.Up], true);
+            controls.Up, true);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -732,7 +727,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateRight(elapsedTime);
             },
-            [controls.Right], true);
+            controls.Right, true);
 
 
             myKeyboard.registerHandler(elapsedTime => {
@@ -744,7 +739,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 socket.emit(NetworkIds.INPUT, message);
                 messageHistory.enqueue(message);
                 playerSelf.model.addSegment();
-
             },
             controls.addSegment, true);
 
