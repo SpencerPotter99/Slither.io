@@ -118,8 +118,8 @@ MyGame.graphics = (function() {
         let numTilesY = Math.ceil(canvas.height / tileImage.height) * 3;
     
         // Loop through each row and column to draw the tiles
-        for (let row = 0; row < numTilesY; row++) {
-            for (let col = 0; col < numTilesX; col++) {
+        for (let row = 0; row < numTilesY-1; row++) {
+            for (let col = 0; col < numTilesX - 1; col++) {
                 // Calculate the position of the current tile
                 let tileX = col * tileImage.width ;
                 let tileY = row * tileImage.height ;

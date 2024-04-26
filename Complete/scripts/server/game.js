@@ -110,7 +110,7 @@ function collided(obj1, obj2) {
 //------------------------------------------------------------------
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
-
+        let killed = false
         if( !activeClients[clientId].player.dead){
             activeClients[clientId].player.update(currentTime);
             activeClients[clientId].player.move(elapsedTime)
@@ -130,8 +130,10 @@ function update(elapsedTime, currentTime) {
             }
             
             for (let otherClientId in activeClients){
+                let otherKill = false
                 if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead && activeClients[otherClientId].player.invincibility <= 0 && activeClients[clientId].player.invincibility<=0 ){
                     if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
+                        activeClients[clientId].player.kills++
                         console.log("HIT")
                         //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
                         //you need to mess around with the radius
@@ -155,6 +157,7 @@ function update(elapsedTime, currentTime) {
                             radius: activeClients[otherClientId].player.segments[i].size.radius
                         }
                         if (collided(obj1, activeClients[clientId].player)) {
+                            otherKill = true
                             console.log("HIT segment")
                            segmentHits.push({
                                 position: activeClients[clientId].player.position,
@@ -170,6 +173,9 @@ function update(elapsedTime, currentTime) {
                         }
                         
                     }
+                }
+                if(otherKill){
+                    activeClients[otherClientId].player.kills++
                 }
             }
         }else{
@@ -277,6 +283,7 @@ function updateClients(elapsedTime) {
             direction: client.player.direction,
             position: client.player.position,
             segments: client.player.segments,
+            kills: client.player.kills,
             name: client.player.playerName,
             dead: client.player.dead,
             updateWindow: lastUpdate
@@ -321,7 +328,6 @@ function updateClients(elapsedTime) {
         //
         // Report any food hits to this client
         for (let hit = 0; hit < hits.length; hit++) {
-            console.log(hits[hit])
             client.socket.emit(NetworkIds.FOOD_HIT, hits[hit]);
         }
         

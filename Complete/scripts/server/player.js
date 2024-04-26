@@ -37,7 +37,7 @@ if (position.y < 0.5) {
     let size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.10
+        radius: 0.075
     };
     let direction = 0; // Angle in radians
     let rotateRate = Math.PI / 1000; // radians per millisecond
@@ -48,12 +48,17 @@ if (position.y < 0.5) {
     let dead = false
     let playerName = name
     let invincibility = 100
+    let kills = 0
 
 
     
 
     Object.defineProperty(that, 'direction', {
         get: () => direction
+    });
+    Object.defineProperty(that, 'kills', {
+        get: () => kills,
+        set: value => kills = value
     });
 
     Object.defineProperty(that, 'position', {
@@ -123,26 +128,35 @@ if (position.y < 0.5) {
         reportUpdate = true;
         let vectorX = Math.cos(direction);
         let vectorY = Math.sin(direction);
-
+    
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
-        this.positionCheck()
-
+        this.positionCheck();
+    
         // Update target locations for segments
         targetLocations.unshift({ x: position.x, y: position.y });
-
+    
         // Update snake segments' positions
         for (let i = 0; i < segments.length; i++) {
             let segment = segments[i];
             if (targetLocations.length > i + 1) {
                 let target = targetLocations[i + 1];
-                segment.addTarget(target);
+                // Calculate direction for the segment
+                let deltaX = target.x - segment.position.x;
+                let deltaY = target.y - segment.position.y;
+                let segmentDirection = Math.atan2(deltaY, deltaX);
+                segment.addTarget({ x: target.x, y: target.y, direction: segmentDirection });
             }
         }
+    
         // Update snake segments' positions
         for (let i = 0; i < segments.length; i++) {
             let segment = segments[i];
-            segment.move(elapsedTime);
+            if (i === 0) {
+                segment.move(elapsedTime);
+            } else {
+                segment.move(elapsedTime, segments[i - 1]);
+            }
         }
     };
 
@@ -218,14 +232,18 @@ if (position.y < 0.5) {
     //------------------------------------------------------------------
     that.addSegment = function() {
         reportUpdate = true;
-        let newSegment
-        if(segments.length===0){
+        let newSegment;
+        if (segments.length === 0) {
             newSegment = createSegment(position, direction);
+        } else {
+            // Get target locations from the last segment
+            let lastSegment = segments[segments.length - 1];
+            let lastSegmentTargets = lastSegment.getTargetLocations();
+    
+            // Pass target locations to the new segment
+            newSegment = createSegment(lastSegment.position, direction, lastSegmentTargets);
         }
-        else{
-            newSegment = createSegment(segments[segments.length - 1].position, segments[segments.length - 1].direction);
-        }
-
+    
         segments.push(newSegment);
     };
 
@@ -247,32 +265,34 @@ if (position.y < 0.5) {
 // Function to create a new segment of the snake.
 //
 //------------------------------------------------------------------
-function createSegment(position, direction) {
+function createSegment(position, direction, targetLocations) {
     let segment = {};
 
     let oppositeDirection = direction + Math.PI;
 
     // Adjust the position based on the opposite direction
     segment.position = {
-        x: position.x - 0.1 * Math.cos(direction),
-        y: position.y - 0.1 * Math.sin(direction)
+        x: position.x - 0.15 * Math.cos(direction),
+        y: position.y - 0.15 * Math.sin(direction)
     }; 
+    
 
     segment.direction = direction; // Direction of the segment
     segment.size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.10
+        radius: 0.075
     };
     segment.speed = 0.0002; // Speed of the segment
-    segment.targetsQueue = []
+    segment.targetsQueue = targetLocations || [];
+    segment.targetsQueue.unshift({ x: position.x, y: position.y, direction: direction })
 
     //------------------------------------------------------------------
     //
     // Moves the segment based on the given vector and elapsed time.
     //
     //------------------------------------------------------------------
-    segment.move = function(elapsedTime) {
+    segment.move = function(elapsedTime, previousSeg) {
         if (segment.targetsQueue.length > 0) {
             let target = segment.targetsQueue[0];
             let deltaX = target.x - segment.position.x;
@@ -280,10 +300,13 @@ function createSegment(position, direction) {
             let distanceToTarget = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             let vectorX = deltaX / distanceToTarget;
             let vectorY = deltaY / distanceToTarget;
-
+    
             segment.position.x += (vectorX * elapsedTime * segment.speed);
             segment.position.y += (vectorY * elapsedTime * segment.speed);
-
+    
+            // Update the segment's direction to point towards the next target
+            segment.direction = Math.atan2(deltaY, deltaX);
+    
             // Check if the segment has reached the target
             if (distanceToTarget < 0.1) {
                 // Remove the reached target from the queue
@@ -299,6 +322,14 @@ function createSegment(position, direction) {
     //------------------------------------------------------------------
     segment.update = function(when) {
         // Update segment's behavior if needed
+    };
+
+    segment.getTargetLocations = function() {
+        let targetLocations = [];
+        for (let target of segment.targetsQueue) {
+            targetLocations.push({ x: target.x, y: target.y });
+        }
+        return targetLocations;
     };
 
     segment.addTarget = function(newTarget) {
