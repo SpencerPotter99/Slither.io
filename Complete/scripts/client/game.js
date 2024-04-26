@@ -399,6 +399,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function getName() {
+        playerSelf.model.position.x = 1
+        playerSelf.model.position.y = 1
         let winGameContainer = document.getElementById('new-game');
         winGameContainer.innerHTML = '';
         
@@ -705,14 +707,15 @@ MyGame.main = (function(graphics, renderer, input, components) {
             renderer.AnimatedSprite.render(AnimatedFoods[food])
         }
 
+       
+        for (let id in particles){
+            renderer.ParticleSystem.render(particles[id], graphics, MyGame.assets['particle-fire'])
+        }
         for (let id in explosions) {
             
             renderer.AnimatedSprite.render(explosions[id]);
             
             //renderFire.render()
-        }
-        for (let id in particles){
-            renderer.ParticleSystem.render(particles[id], graphics, MyGame.assets['particle-fire'])
         }
         renderHighscoreInfo()
         

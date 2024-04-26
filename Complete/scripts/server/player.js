@@ -37,7 +37,7 @@ if (position.y < 0.5) {
     let size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.10
+        radius: 0.075
     };
     let direction = 0; // Angle in radians
     let rotateRate = Math.PI / 1000; // radians per millisecond
@@ -276,7 +276,7 @@ function createSegment(position, direction, targetLocations) {
     segment.size = {
         width: 0.15,
         height: 0.15,
-        radius: 0.10
+        radius: 0.075
     };
     segment.speed = 0.0002; // Speed of the segment
     segment.targetsQueue = targetLocations || [];
