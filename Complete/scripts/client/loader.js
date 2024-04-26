@@ -76,6 +76,9 @@ MyGame.loader = (function() {
         },{
             key: 'player-caboose-other',
             source: 'assets/evilCaboose.png'
+        },{
+            key: 'particle-smoke',
+            source: 'assets/smoke-2.png'
         }
     
     ];

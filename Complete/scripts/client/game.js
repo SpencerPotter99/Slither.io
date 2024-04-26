@@ -45,6 +45,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         messageHistory = Queue.create(),
         messageId = 1,
         nextExplosionId = 1,
+        nextFoodEatID = 1,
         socket = io(),
         networkQueue = Queue.create();
         let hornSound = new sound("../../assets/horn.mp3")
@@ -55,6 +56,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         }
         let controls = JSON.parse(localStorage.getItem('controls'))
         let particles = {}
+        let eatParticles = {}
         
         let highScores = localStorage.getItem('highScores')
         let highScoresArray = []
@@ -244,7 +246,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             playerSelf.model.direction = data.direction;
             playerSelf.model.segments = data.segments
             playerSelf.model.kills = data.kills
-            console.log(data.kills)
+
 
             //
             // Remove messages from the queue up through the last one identified
@@ -315,7 +317,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function foodNew(data) {
-        console.log("revieving Food" + data)
         foods[data.id] = components.Food({
             id: data.id,
             radius: data.radius,
@@ -368,6 +369,16 @@ MyGame.main = (function(graphics, renderer, input, components) {
         messageHistory.enqueue(message);
         playerSelf.model.addSegment();
         }
+
+        eatParticles[nextFoodEatID] = components.ParticleSystem({
+            center: { x: data.position.x, y: data.position.y },
+            size: { mean: .05, stdev: .05 },
+            speed: { mean: .005, stdev: .05 },
+            lifetime: { mean: 1, stdev: .5 },
+            totalParticles: 5
+        },
+        graphics);
+        nextFoodEatID++
         
         //
         // When we receive a hit notification, go ahead and remove the
@@ -485,7 +496,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function renderHighscoreInfo() {
-        console.log(playerSelf.model.kills)
         sortScoresDescending()
         let fuelContainer = document.getElementById('highscore-info');
         fuelContainer.innerHTML = '';
@@ -520,8 +530,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     // Update highestPosition if player's position is found
                     if (playerSelf?.model?.playerName === name && playerSelf?.model?.playerName !==undefined && Object.keys(playerOthers).length > 0 && Object.keys(currentScores).length > 1) {
                         if(index < highestPosition || highestPosition === null){
-                            console.log(highestPosition)
-                            console.log(index)
                             highestPosition = index;
                             
                         }
@@ -723,6 +731,9 @@ MyGame.main = (function(graphics, renderer, input, components) {
         for(let id in particles){
             particles[id].update(elapsedTime)
         }
+        for(let id in eatParticles){
+            eatParticles[id].update(elapsedTime)
+        }
     }
 
     //------------------------------------------------------------------
@@ -755,6 +766,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
         for (let id in particles){
             renderer.ParticleSystem.render(particles[id], graphics, MyGame.assets['particle-fire'])
         }
+
+        for (let id in eatParticles){
+            renderer.ParticleSystem.render(eatParticles[id], graphics, MyGame.assets['particle-smoke'])
+        }
+
         for (let id in explosions) {
             
             renderer.AnimatedSprite.render(explosions[id]);
