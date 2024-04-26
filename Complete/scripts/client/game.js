@@ -73,6 +73,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
             lifetime: { mean: 2, stdev: 1 }
         },
         graphics);
+        let highestPosition = null;
+        let killCount = 0;
     
     socket.on(NetworkIds.CONNECT_ACK, data => {
         networkQueue.enqueue({
@@ -311,7 +313,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function foodNew(data) {
-        console.log("revieving Food" + data)
         foods[data.id] = components.Food({
             id: data.id,
             radius: data.radius,
@@ -481,11 +482,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function renderHighscoreInfo() {
-
+        sortScoresDescending()
         let fuelContainer = document.getElementById('highscore-info');
         fuelContainer.innerHTML = '';
-        
-        if(playerSelf?.model?.segments?.length>0){
+    
+        if (playerSelf?.model?.segments?.length > 0) {
             fuelContainer.style.visibility = 'visible';
             let yourScore = document.createElement('h2');
             // Set the text content to be name and associated score
@@ -493,11 +494,17 @@ MyGame.main = (function(graphics, renderer, input, components) {
             // Append the <h2> element to the fuelContainer
             fuelContainer.appendChild(yourScore);
         }
-
-       // Loop through each name and score in currentScores
-       if(Object.keys(currentScores).length>0){
+    
+        // Loop through each name and score in currentScores
+        if (Object.keys(currentScores).length > 1 && Object.keys(playerOthers).length > 0) {
+            let index = 1;
+            let playerFound = false; // Flag to track if player's position has been found
             fuelContainer.style.visibility = 'visible';
             for (let name in currentScores) {
+                if (currentScores.hasOwnProperty(name) && (name === 'undefined' || name === '' || currentScores[name] === undefined)) {
+                    // Delete the element with an undefined name from currentScores
+                    delete currentScores[name];
+                }
                 if (currentScores.hasOwnProperty(name) && name !== 'undefined' && name !== '') {
                     // Create an <h2> element for the name and score
                     let highscoreElement = document.createElement('h2');
@@ -505,9 +512,23 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     highscoreElement.textContent = name + ': ' + currentScores[name];
                     // Append the <h2> element to the fuelContainer
                     fuelContainer.appendChild(highscoreElement);
+    
+                    // Update highestPosition if player's position is found
+                    if (playerSelf?.model?.playerName === name && playerSelf?.model?.playerName !==undefined) {
+                        if(index < highestPosition || highestPosition === null){
+                            highestPosition = index;
+                            
+                        }
+                        playerFound = true;
+                    }
+                    index++;
                 }
             }
-        } else if(playerSelf?.model?.segments?.length>0){
+            // If player's position is not found, set highestPosition to the last index
+            if (!playerFound) {
+                highestPosition = index;
+            }
+        } else if (playerSelf?.model?.segments?.length > 0) {
             fuelContainer.style.visibility = 'visible';
         } else {
             fuelContainer.style.visibility = 'hidden';
@@ -525,6 +546,15 @@ MyGame.main = (function(graphics, renderer, input, components) {
         let winGameText = document.createElement('h2');
         winGameText.textContent = "You DIED!";
         
+        let highestPositionText = document.createElement('h2');
+        if(highestPosition === null){
+            highestPositionText.textContent = "Highest Position Achieved: " + 1
+        }
+        else{
+            highestPositionText.textContent = "Highest Position Achieved: " + highestPosition
+        }
+        
+
         // Create a button element
         let returnToMenuButton = document.createElement('button');
         returnToMenuButton.textContent = "Return to Menu";
@@ -545,6 +575,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         
         // Append elements to the container
         winGameContainer.appendChild(winGameText);
+        winGameContainer.appendChild(highestPositionText)
         winGameContainer.appendChild(returnToMenuButton);
         
 
@@ -608,15 +639,18 @@ MyGame.main = (function(graphics, renderer, input, components) {
 
     function sortScoresDescending() {
         // Convert currentScores to an array of key-value pairs
+        
         let scoresArray = Object.entries(currentScores);
     
         // Sort the array based on the score values in descending order
         scoresArray.sort((a, b) => b[1] - a[1]);
-    
         // Convert the sorted array back into an object
         let sortedScores = {};
         for (let [name, score] of scoresArray) {
-            sortedScores[name] = score;
+            // Exclude entries with an empty string key
+            if (name !== "") {
+                sortedScores[name] = score;
+            }
         }
     
         // Update currentScores with the sorted scores
@@ -647,7 +681,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             )
         }
 
-        sortScoresDescending()
+        
 
         let removefoods = [];
        
