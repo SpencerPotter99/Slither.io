@@ -10,7 +10,7 @@ let Player = require('./player');
 let Food = require('./food');
 let NetworkIds = require('../shared/network-ids');
 let Queue = require('../shared/queue.js');
-let FoodAMT = 20;
+let FoodAMT = 100;
 const SIMULATION_UPDATE_RATE_MS = 50;
 const STATE_UPDATE_RATE_MS = 100;
 let lastUpdate = 0;
@@ -114,6 +114,21 @@ function update(elapsedTime, currentTime) {
         if( !activeClients[clientId].player.dead){
             activeClients[clientId].player.update(currentTime);
             activeClients[clientId].player.move(elapsedTime)
+            if(activeClients[clientId].player.dead){
+                for(let segment in activeClients[clientId].player.segments){
+                segmentHits.push({
+                    position: activeClients[clientId].player.segments[segment].position,
+                    clientId: clientId
+                })
+            }
+                activeClients[clientId].player.snakeHit(currentTime)
+                segmentHits.push({
+                    position: activeClients[clientId].player.position,
+                    clientId: clientId
+                })
+
+            }
+            
             for (let otherClientId in activeClients){
                 if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead && activeClients[otherClientId].player.invincibility <= 0 && activeClients[clientId].player.invincibility<=0 ){
                     if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
@@ -203,8 +218,8 @@ function update(elapsedTime, currentTime) {
     if ((activeFood.length + newFoods.length) < FoodAMT){
         while (activeFood.length + newFoods.length < FoodAMT) {
             // Generate a new food item
-            let x = Math.random(); // Random x-coordinate between 0 (inclusive) and 1 (exclusive)
-            let y = Math.random();
+            let x = Math.random() * 3; // Random x-coordinate between 0 (inclusive) and 1 (exclusive)
+            let y = Math.random() * 3;
             let position = {x:x, y:y};
             createFood(position);
             

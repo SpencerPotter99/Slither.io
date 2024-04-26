@@ -85,6 +85,16 @@ MyGame.components.Player = function() {
     that.snakeHit = function(elapsedTime){
         dead = true
     }
+    that.positionCheck = function()
+    {
+        if((position.x > 3) || (position.x < 0)){
+            dead = true
+        }
+        if((position.y > 3) || (position.y < 0)){
+            dead = true
+        }
+
+    };
 
     //------------------------------------------------------------------
     //
@@ -98,6 +108,7 @@ MyGame.components.Player = function() {
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
 
+        this.positionCheck();
         // Update target locations for segments
         targetLocations.unshift({ x: position.x, y: position.y });
 
@@ -116,6 +127,7 @@ MyGame.components.Player = function() {
         }
         
     };
+
 
     //------------------------------------------------------------------
     //

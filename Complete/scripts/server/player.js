@@ -17,9 +17,22 @@ function createPlayer(name) {
     let that = {};
 
     let position = {
-        x: random.nextDouble(),
-        y: random.nextDouble()
+        x: random.nextDouble() ,
+        y: random.nextDouble() 
     };
+
+    if (position.x < 0.5) {
+    position.x = 0.5;
+} else if (position.x > 2.5) {
+    position.x = 2.5;
+}
+
+// Adjusting y value
+if (position.y < 0.5) {
+    position.y = 0.5;
+} else if (position.y > 2.5) {
+    position.y = 2.5;
+}
 
     let size = {
         width: 0.15,
@@ -92,6 +105,20 @@ function createPlayer(name) {
     // last move took place.
     //
     //------------------------------------------------------------------
+    that.positionCheck = function()
+    {
+        if((position.x > 3) || (position.x < 0)){
+            dead = true
+        }
+        if((position.y > 3) || (position.y < 0)){
+            dead = true
+        }
+
+    };
+
+
+
+
     that.move = function(elapsedTime) {
         reportUpdate = true;
         let vectorX = Math.cos(direction);
@@ -99,6 +126,7 @@ function createPlayer(name) {
 
         position.x += (vectorX * elapsedTime * speed);
         position.y += (vectorY * elapsedTime * speed);
+        this.positionCheck()
 
         // Update target locations for segments
         targetLocations.unshift({ x: position.x, y: position.y });
