@@ -114,20 +114,22 @@ MyGame.graphics = (function() {
 
     function drawBackground(tileImage) {
         // Calculate the number of tiles needed to fill the canvas
-        let numTilesX = Math.ceil(canvas.width / tileImage.width);
-        let numTilesY = Math.ceil(canvas.height / tileImage.height);
+        let numTilesX = Math.ceil(canvas.width / tileImage.width) * 3;
+        let numTilesY = Math.ceil(canvas.height / tileImage.height) * 3;
     
         // Loop through each row and column to draw the tiles
         for (let row = 0; row < numTilesY; row++) {
             for (let col = 0; col < numTilesX; col++) {
                 // Calculate the position of the current tile
-                let tileX = col * tileImage.width;
-                let tileY = row * tileImage.height;
+                let tileX = col * tileImage.width ;
+                let tileY = row * tileImage.height ;
     
                 // Draw the tile at the calculated position
-                context.drawImage(tileImage, tileX, tileY);
+                context.drawImage(tileImage, tileX, tileY, tileImage.width + 2, tileImage.height + 2);
             }
         }
+        
+
     }
 
     //------------------------------------------------------------------
