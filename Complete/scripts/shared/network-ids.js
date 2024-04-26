@@ -40,6 +40,10 @@
             value: 'rotate-down',
             writable: false
         },
+        'INPUT_ROTATE_CUSTOM':{
+            value: 'rotate-custom',
+            writable: false
+        },
         'INPUT_ADD_SEGMENT': {
             value: 'add-segment',
             writable: false

@@ -16,22 +16,23 @@ MyGame.input.Keyboard = function() {
     // Allows the client code to register a keyboard handler.
     //
     // ------------------------------------------------------------------
-    that.registerHandler = function(handler, key, repeat, rate) {
+    that.registerHandler = function(handler, key1,key2, repeat, rate) {
         //
         // If no repeat rate was passed in, use a value of 0 so that no delay between
         // repeated keydown events occurs.
         if (rate === undefined) {
             rate = 0;
         }
-
+       
         //
         // Each entry is an array of handlers to allow multiple handlers per keyboard input
-        if (!handlers.hasOwnProperty(key)) {
-            handlers[key] = [];
+        if (!handlers.hasOwnProperty(key1)) {
+            handlers[key1] = [];
         }
-        handlers[key].push({
+        handlers[key1].push({
             id: nextHandlerId,
-            key: key,
+            key1: key1,
+            key2:key2,
             repeat: repeat,
             rate: rate,
             elapsedTime: rate,    // Initialize an initial elapsed time so the very first keypress will be valid
@@ -43,7 +44,7 @@ MyGame.input.Keyboard = function() {
         //
         // We return an handler id that client code must track if it is desired
         // to unregister the handler in the future.
-        return handlers[key][handlers[key].length - 1].id;
+        return handlers[key1][handlers[key1].length - 1].id;
     };
 
     // ------------------------------------------------------------------
@@ -97,14 +98,50 @@ MyGame.input.Keyboard = function() {
     //
     // ------------------------------------------------------------------
     that.update = function(elapsedTime) {
-        
+        let keycount = 0;
+        for(let key in keys){
+            keycount += 1
+        }
 
         for (let key in keys) {
-            if (keys.length > 1){
-                
+            if (keycount > 1){
+                if(handlers.hasOwnProperty(key)){
+                    for(let input in handlers[key]){
+                        if(handlers[key][input].key2 == null){
+                            continue;
+                        }
+                        else if (handlers[key][input].key2 != null){
+                            if(handlers[key][input].key2 in keys){
+                                let event = handlers[key][input];
+                                let key2 = handlers[key][input].key2
+                                event.elapsedTime += elapsedTime;
+                                if (event.repeat === true) {
+                                        //
+                                        // Check the rate vs elapsed time for this key before invoking the handler
+                                     if (event.elapsedTime >= event.rate) {
+                                        event.handler(elapsedTime);
+                                        keyRepeat[key] = true;
+                                        keyRepeat[key2] = true;
+                                        //
+                                        // Reset the elapsed time, adding in any extra time beyond the repeat
+                                         // rate that may have accumulated.
+                                        event.elapsedTime = (event.elapsedTime - event.rate);
+                                     }
+                                } else if (event.repeat === false && keyRepeat[key] === false) {
+                                    event.handler(elapsedTime);
+                                        keyRepeat[key] = true;
+                                        keyRepeat[key2] = true;
+                                }
+                            }
+                        }
+                        
+                    }
+                }
             }
+            if(keycount == 1){
             if (handlers.hasOwnProperty(key)) {
                 for (let entry = 0; entry < handlers[key].length; entry += 1) {
+                    if(handlers[key][entry].key2 == null){
                     let event = handlers[key][entry];
                     event.elapsedTime += elapsedTime;
                     if (event.repeat === true) {
@@ -124,7 +161,9 @@ MyGame.input.Keyboard = function() {
                     }
                 }
             }
+            }
         }
+    }
     };
 
     //
