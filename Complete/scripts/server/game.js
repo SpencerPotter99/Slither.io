@@ -321,7 +321,6 @@ function updateClients(elapsedTime) {
         //
         // Report any food hits to this client
         for (let hit = 0; hit < hits.length; hit++) {
-            console.log(hits[hit])
             client.socket.emit(NetworkIds.FOOD_HIT, hits[hit]);
         }
         

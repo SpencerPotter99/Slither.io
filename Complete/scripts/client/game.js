@@ -589,8 +589,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     foodNew(message.data);
                     break;
                 case NetworkIds.FOOD_HIT:
-                    console.log(message.data)
-                    console.log(playerSelf)
                     foodHit(message.data, elapsedTime);
                     break;
                 case NetworkIds.SNAKE_HIT:
@@ -812,7 +810,6 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function checkScore() {
-        console.log("TESTTTTTTTTTTTT")
         // Convert highScores object to an array of objects
         for (let key in highScores) {
             highScoresArray.push({ name: key, score: highScores[key] });
