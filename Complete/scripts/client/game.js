@@ -313,6 +313,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     //
     //------------------------------------------------------------------
     function foodNew(data) {
+        console.log("revieving Food" + data)
         foods[data.id] = components.Food({
             id: data.id,
             radius: data.radius,
@@ -514,8 +515,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
                     fuelContainer.appendChild(highscoreElement);
     
                     // Update highestPosition if player's position is found
-                    if (playerSelf?.model?.playerName === name && playerSelf?.model?.playerName !==undefined) {
+                    if (playerSelf?.model?.playerName === name && playerSelf?.model?.playerName !==undefined && Object.keys(playerOthers).length > 0 && Object.keys(currentScores).length > 1) {
                         if(index < highestPosition || highestPosition === null){
+                            console.log(highestPosition)
+                            console.log(index)
                             highestPosition = index;
                             
                         }
@@ -546,14 +549,13 @@ MyGame.main = (function(graphics, renderer, input, components) {
         let winGameText = document.createElement('h2');
         winGameText.textContent = "You DIED!";
         
-        let highestPositionText = document.createElement('h2');
-        if(highestPosition === null){
-            highestPositionText.textContent = "Highest Position Achieved: " + 1
-        }
-        else{
-            highestPositionText.textContent = "Highest Position Achieved: " + highestPosition
-        }
         
+        let highestPositionText = document.createElement('h2');
+        if(highestPosition === null) {
+            highestPositionText.textContent = "Highest Position Achieved: " + 1
+        } else {
+        highestPositionText.textContent = "Highest Position Achieved: " + highestPosition
+        }
 
         // Create a button element
         let returnToMenuButton = document.createElement('button');
