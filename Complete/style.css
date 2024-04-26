@@ -1,4 +1,10 @@
 html, body {
+    background-image: url('./assets/pixelBackground.jpg'); /* Replace 'image.jpg' with the path to your image */
+    background-size: cover; /* Cover the entire background */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Do not repeat the background image */
+    height: 100vh; /* Ensure the background covers the entire viewport height */
+    margin: 0;
     overflow: hidden;
 }
 
@@ -50,6 +56,10 @@ html, body {
     position: relative; /* Ensure .new-game is positioned relative to this */
     width: 100%; /* Ensure it spans the width of the parent */
     height: 100vh; /* Set height of parent container to viewport height */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .lunar-info {
