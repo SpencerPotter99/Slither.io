@@ -16,7 +16,8 @@ MyGame.components.PlayerRemote = function() {
             x: 0,
             y: 0
         },
-        segments: []
+        segments: [],
+        kills: 0
     };
     let goal = {
         direction: 0,

@@ -132,6 +132,7 @@ function update(elapsedTime, currentTime) {
             for (let otherClientId in activeClients){
                 if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead && activeClients[otherClientId].player.invincibility <= 0 && activeClients[clientId].player.invincibility<=0 ){
                     if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
+                        activeClients[clientId].player.kills++
                         console.log("HIT")
                         //REMEBVER YOU CHANGED THE RADIUS FOR THE PLAYER!!!!!
                         //you need to mess around with the radius
@@ -155,6 +156,7 @@ function update(elapsedTime, currentTime) {
                             radius: activeClients[otherClientId].player.segments[i].size.radius
                         }
                         if (collided(obj1, activeClients[clientId].player)) {
+                            activeClients[otherClientId].player.kills++
                             console.log("HIT segment")
                            segmentHits.push({
                                 position: activeClients[clientId].player.position,
@@ -277,6 +279,7 @@ function updateClients(elapsedTime) {
             direction: client.player.direction,
             position: client.player.position,
             segments: client.player.segments,
+            kills: client.player.kills,
             name: client.player.playerName,
             dead: client.player.dead,
             updateWindow: lastUpdate

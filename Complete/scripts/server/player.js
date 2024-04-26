@@ -48,12 +48,17 @@ if (position.y < 0.5) {
     let dead = false
     let playerName = name
     let invincibility = 100
+    let kills = 0
 
 
     
 
     Object.defineProperty(that, 'direction', {
         get: () => direction
+    });
+    Object.defineProperty(that, 'kills', {
+        get: () => kills,
+        set: value => kills = value
     });
 
     Object.defineProperty(that, 'position', {

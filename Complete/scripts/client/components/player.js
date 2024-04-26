@@ -21,6 +21,7 @@ MyGame.components.Player = function() {
     let targetLocations = []
     let dead = false
     let playerName = ''
+    let kills = 0
 
     Object.defineProperty(that, 'direction', {
         get: () => direction,
@@ -35,6 +36,11 @@ MyGame.components.Player = function() {
     Object.defineProperty(that, 'rotateRate', {
         get: () => rotateRate,
         set: value => { rotateRate = value; }
+    });
+
+    Object.defineProperty(that, 'kills', {
+        get: () => kills,
+        set: value => { kills = value; }
     });
 
     Object.defineProperty(that, 'position', {

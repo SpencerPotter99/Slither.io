@@ -243,6 +243,8 @@ MyGame.main = (function(graphics, renderer, input, components) {
             playerSelf.model.position.y = data.position.y;
             playerSelf.model.direction = data.direction;
             playerSelf.model.segments = data.segments
+            playerSelf.model.kills = data.kills
+            console.log(data.kills)
 
             //
             // Remove messages from the queue up through the last one identified
@@ -483,6 +485,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
     }
 
     function renderHighscoreInfo() {
+        console.log(playerSelf.model.kills)
         sortScoresDescending()
         let fuelContainer = document.getElementById('highscore-info');
         fuelContainer.innerHTML = '';
@@ -557,6 +560,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
         highestPositionText.textContent = "Highest Position Achieved: " + highestPosition
         }
 
+         // Create a heading element
+         let killsText = document.createElement('h2');
+         killsText.textContent = "You Killed: " + playerSelf.model.kills + " Snakes";
+
         // Create a button element
         let returnToMenuButton = document.createElement('button');
         returnToMenuButton.textContent = "Return to Menu";
@@ -578,6 +585,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
         // Append elements to the container
         winGameContainer.appendChild(winGameText);
         winGameContainer.appendChild(highestPositionText)
+        winGameContainer.appendChild(killsText)
         winGameContainer.appendChild(returnToMenuButton);
         
 
