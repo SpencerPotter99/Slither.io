@@ -110,7 +110,7 @@ function collided(obj1, obj2) {
 //------------------------------------------------------------------
 function update(elapsedTime, currentTime) {
     for (let clientId in activeClients) {
-
+        let killed = false
         if( !activeClients[clientId].player.dead){
             activeClients[clientId].player.update(currentTime);
             activeClients[clientId].player.move(elapsedTime)
@@ -130,6 +130,7 @@ function update(elapsedTime, currentTime) {
             }
             
             for (let otherClientId in activeClients){
+                let otherKill = false
                 if(otherClientId !== activeClients[clientId].player.clientId && !activeClients[otherClientId].player.dead && activeClients[otherClientId].player.invincibility <= 0 && activeClients[clientId].player.invincibility<=0 ){
                     if(collided(activeClients[clientId].player, activeClients[otherClientId].player)){
                         activeClients[clientId].player.kills++
@@ -156,7 +157,7 @@ function update(elapsedTime, currentTime) {
                             radius: activeClients[otherClientId].player.segments[i].size.radius
                         }
                         if (collided(obj1, activeClients[clientId].player)) {
-                            activeClients[otherClientId].player.kills++
+                            otherKill = true
                             console.log("HIT segment")
                            segmentHits.push({
                                 position: activeClients[clientId].player.position,
@@ -172,6 +173,9 @@ function update(elapsedTime, currentTime) {
                         }
                         
                     }
+                }
+                if(otherKill){
+                    activeClients[otherClientId].player.kills++
                 }
             }
         }else{
