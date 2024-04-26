@@ -161,17 +161,25 @@ MyGame.graphics = (function() {
     //
     // --------------------------------------------------------------
     function drawTexture(image, center, rotation, size) {
+        let localCenter = {
+            x: center.x * canvas.width,
+            y: center.y * canvas.width
+        };
+        let localSize = {
+            width: size.x * canvas.width,
+            height: size.y * canvas.height
+        };
         context.save();
 
-        context.translate(center.x, center.y);
+        context.translate(localCenter.x, localCenter.y);
         context.rotate(rotation);
-        context.translate(-center.x, -center.y);
+        context.translate(-localCenter.x, -localCenter.y);
 
         context.drawImage(
             image,
-            center.x - size.x / 2,
-            center.y - size.y / 2,
-            size.x, size.y);
+            localCenter.x - localSize.width / 3,
+            localCenter.y - localSize.height / 3,
+            localSize.width, localSize.height);
 
         context.restore();
     }
