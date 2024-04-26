@@ -51,7 +51,11 @@ MyGame.main = (function(graphics, renderer, input, components) {
         let hornSound = new sound("../../assets/horn.mp3")
         let explosionSound = new sound("../../assets/explosionSound.mp3")
         if(!localStorage.getItem('controls')){
-            var TMPcontrols = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
+            var TMPcontrols = { 
+                "Up": "ArrowUp",
+                "Right": "ArrowRight",
+                "Left": "ArrowLeft",
+                "Down": "ArrowDown"};
             localStorage.setItem('controls', JSON.stringify(TMPcontrols))
         }
         let controls = JSON.parse(localStorage.getItem('controls'))
@@ -817,7 +821,114 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateUp(elapsedTime);
             },
-            controls.Up, true);
+            controls.Up,null,false);
+
+            //Northeast AKA upRIght
+        myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                    id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'NorthEast',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "NorthEast");
+            },
+
+            controls.Up,controls.Right, false);
+            //Up Right part 2
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                    id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'NorthEast',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "NorthEast");
+            },
+
+            controls.Right,controls.Up, false);
+            //Down Left
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                    id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'SouthWest',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "SouthWest");
+            },
+            controls.Down,controls.Left, false);
+                        //Down Left
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                     id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'SouthWest',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "SouthWest");
+            },
+            controls.Left,controls.Down, false);
+            //Up left
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                     id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'NorthWest',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "NorthWest");
+            },
+            controls.Left,controls.Up, false);
+            //Up left
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                     id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'NorthWest',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "NorthWest");
+            },
+            controls.Up,controls.Left, false);
+            //Down Right
+            myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                     id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'SouthEast',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "SouthEast");
+            },
+            controls.Down,controls.Right, false);
+             //Down Right
+             myKeyboard.registerHandler(elapsedTime => {
+                let message = {
+                     id: messageId++,
+                    elapsedTime: elapsedTime,
+                    direction: 'SouthEast',
+                    type: NetworkIds.INPUT_ROTATE_CUSTOM
+                };
+                socket.emit(NetworkIds.INPUT, message);
+                messageHistory.enqueue(message);
+                playerSelf.model.rotateCustom(elapsedTime, "SouthEast");
+            },
+            controls.Right,controls.Down, false);
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -829,20 +940,10 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateRight(elapsedTime);
             },
-            controls.Right, true);
+            controls.Right,null, false);
 
 
-            myKeyboard.registerHandler(elapsedTime => {
-                let message = {
-                    id: messageId++,
-                    elapsedTime: elapsedTime,
-                    type: NetworkIds.INPUT_ADD_SEGMENT
-                };
-                socket.emit(NetworkIds.INPUT, message);
-                messageHistory.enqueue(message);
-                playerSelf.model.addSegment();
-            },
-            controls.addSegment, true);
+
 
         myKeyboard.registerHandler(elapsedTime => {
                 let message = {
@@ -854,7 +955,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
                 messageHistory.enqueue(message);
                 playerSelf.model.rotateLeft(elapsedTime);
             },
-            controls.Left, true);
+            controls.Left,null,false);
         myKeyboard.registerHandler(elapsedTime => {
             let message = {
                 id: messageId++,
@@ -865,7 +966,7 @@ MyGame.main = (function(graphics, renderer, input, components) {
             messageHistory.enqueue(message);
             playerSelf.model.rotateDown(elapsedTime);
         },
-        controls.Down, true);
+        controls.Down,null, false);
 
         //
         // Get the game loop started

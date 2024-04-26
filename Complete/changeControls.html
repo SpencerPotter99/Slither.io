@@ -44,7 +44,11 @@ class ChangeControlsScene {
         this.Left = "Left";
         this.addSegment = "addSegment"
         if(!localStorage.getItem('controls')){
-            this.controls = {"Up":"KeyW","Right":"KeyD","Left":"KeyA","Down":"KeyS","addSegment":"KeyT"};
+            this.controls = { 
+                "Up": "ArrowUp",
+                "Right": "ArrowRight",
+                "Left": "ArrowLeft",
+                "Down": "ArrowDown"};
             localStorage.setItem('controls', JSON.stringify(this.controls))
         }
         this.controls = JSON.parse(localStorage.getItem('controls'));
@@ -54,7 +58,6 @@ class ChangeControlsScene {
             { label: this.Right, control:  this.controls.Right },
             { label: this.Left, control:  this.controls.Left },
             { label: this.Down, control:  this.controls.Down },
-            { label: this.addSegment, control:  this.controls.addSegment },
         ];
         this.draw();
     }

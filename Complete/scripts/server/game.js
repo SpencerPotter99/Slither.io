@@ -68,8 +68,8 @@ function processInput(elapsedTime) {
             case NetworkIds.INPUT_ROTATE_RIGHT:
                 client.player.rotateRight(input.message.elapsedTime);
                 break;
-            case NetworkIds.INPUT_ROTATE_SOUTH_EAST:
-                client.player.rotateSouthEast(input.message.elapsedTime);
+            case NetworkIds.INPUT_ROTATE_CUSTOM:
+                client.player.rotateCustom(input.message.elapsedTime, input.message.direction);
                 break;
             case NetworkIds.INPUT_ROTATE_UP:
                 client.player.rotateUp(input.message.elapsedTime);

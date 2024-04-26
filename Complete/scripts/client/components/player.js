@@ -147,8 +147,22 @@ MyGame.components.Player = function() {
     that.rotateUp = function(elapsedTime) {
         direction = 4.71239
     };
-    that.rotateSouthEast = function(elapsedTime) {
-        direction = 0.785398
+    that.rotateCustom = function(elapsedTime, newDirection) {
+        
+        if(newDirection == "SouthWest"){
+            direction = 2.356195
+        }
+        if(newDirection == "NorthEast"){
+            direction = 2.356195 + (6.28319)/2
+        }
+        if(newDirection == "NorthWest"){
+            direction = 0.78539816339 + 3.14159
+        }
+        if(newDirection == "SouthEast"){
+            direction = 0.78539816339 
+        }
+    
+
     };
     that.rotateDown = function(elapsedTime) {
         
